@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Câmera Cebraspe</string>
+    <!-- 
+        Para testar as respostas estaticas passar vazio estaticas de teste do Google: 
+        android.test.purchased
+        android.test.canceled
+        android.test.refunded
+        android.test.item_unavailable
+        Descomentar linha original quando subir versao para a Google Play 
+    -->
+    <string name="RNB_GOOGLE_PLAY_LICENSE_KEY"></string>
+    <!-- <string name="RNB_GOOGLE_PLAY_LICENSE_KEY">MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwKr1keLiIC79qgsRR0+wM/Ln+FTL7BlnXvaMsOA/Cv/f1fwjvFzviHHBNrAXfxPc91hDVcthVQ0cyDfUJ8heJt477r/sKC8htcYtDTMzPjF5Spzztdm9sHPsJE7GEzaj41xygJBeEBp6vmm6xpuskkYqSwfYWBq6CBEXFKqLZKw7dX6qOumiFtpFh/9bRhKTiVmYdXo2e7wQ6iJc0LHya0MDuSbr+rla5vnfUz44Sg5yB7exqjOCsGCVkewf3ECp1VVYWGr9FQruEVexXrm1TU/xaA+xW4oRESr2ARZ5G0JspNEJjCg5FYdEaC67lM2qHKIHGpU/6o0EeYuNMguTkwIDAQAB</string> -->
+</resources>

@@ -1,0 +1,27 @@
+== Para funcionar o live reloading tive que executar o comando: 
+
+npx react-native start
+
+
+= Para funcionar o pacore react-native-orientation =
+
+1) Em "node_modules/react-native-orientation/android/build.gradle"
+  
+  Substitua: 
+
+  dependencies {
+    -    compile "com.facebook.react:react-native:+"
+    +    implementation "com.facebook.react:react-native:+"
+  }
+
+  Conforme: https://github.com/yamill/react-native-orientation/issues/407
+
+2) Em "android/app/build.gradle"
+
+   NÃO inclua: 
+
+   ...
+    dependencies {
+        ...
+        compile project(':react-native-orientation')
+    }

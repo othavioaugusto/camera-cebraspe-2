@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ESnext",
+    "lib": [
+      "ES2017",
+      "dom"
+    ],
+    "allowJs": true,
+    "jsx": "react-native",
+    "checkJs": false,
+    "declaration": true,
+    "isolatedModules": true,
+    "outDir": "dist",
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.tsx",
+    "src/**/*.ts",
+    "App.tsx"
+  ],
+  "exclude": [
+    ".ci",
+    "web-build",
+    "node_modules",
+    "babel.config.js",
+    "jest.config.js",
+    "src/index.d.ts",
+    "__tests__"
+  ]
+}
