@@ -60,4 +60,9 @@ buck-out/
 /ios/Pods/
 /vendor/bundle/
 
+KEYSTORES
+Notas.txt
+android/app/build/
+android/app/camcebraspe_key_name.keystore
+
 arrumar-react-orientation.sh

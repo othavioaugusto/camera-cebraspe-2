@@ -336,7 +336,7 @@ const getPastaArmazenamentoExterno = async () => {
   let pasta = "";
   try {
     const sdCardPathCameraCebraspe = await getSDCardPathCameraCebraspeModule();
-    pasta = sdCardPathCameraCebraspe || "/storage/3130-3239/Android/data/com.camcebraspe";
+    pasta = sdCardPathCameraCebraspe || "/storage/3130-3239/Android/data/com.camcebraspe2";
     pasta += "/cebraspe-video-recorder";
 
     let exists = await RNFS.exists(pasta);

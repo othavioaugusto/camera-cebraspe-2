@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Câmera Cebraspe</string>
+    <string name="app_name">Câmera Cebraspe 2</string>
     <!-- 
         Para testar as respostas estaticas passar vazio estaticas de teste do Google: 
         android.test.purchased

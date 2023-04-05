@@ -45,8 +45,8 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
 
   const [selecoes, setSelecoes] = useState([
     { titulo: "Flash", desc: "Habilitar a função flash da câmera", selecionado: false, id: "FUNC_FLASH" },
-    { titulo: "Zoom", desc: "Habilitar a função zoom da câmera", selecionado: true, id: "FUNC_ZOOM" },
-    { titulo: "Foco", desc: "Habilitar a função foco da câmera", selecionado: true, id: "FUNC_FOCO" },
+    { titulo: "Zoom", desc: "Habilitar a função zoom da câmera", selecionado: false, id: "FUNC_ZOOM" },
+    { titulo: "Foco", desc: "Habilitar a função foco da câmera", selecionado: false, id: "FUNC_FOCO" },
     { titulo: "Botão Apagar", desc: "Habilitar botão que permite apagar vídeo", selecionado: false, id: "FUNC_BOT_APAGAR" },
   ]);
   const [qualidadeSelect, setQualidadeSelect] = useState(constants.videoBitRate);

@@ -1,4 +1,4 @@
-package com.cameracebraspe.newarchitecture;
+package com.camcebraspe2.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.EmptyReactNativeConfig;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.cameracebraspe.BuildConfig;
-import com.cameracebraspe.newarchitecture.components.MainComponentsRegistry;
-import com.cameracebraspe.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.camcebraspe2.BuildConfig;
+import com.camcebraspe2.newarchitecture.components.MainComponentsRegistry;
+import com.camcebraspe2.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 
