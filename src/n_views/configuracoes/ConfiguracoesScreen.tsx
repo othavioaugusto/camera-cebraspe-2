@@ -16,7 +16,7 @@ import ContainerApp from "../core/components/ContainerApp";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Spinner from "react-native-loading-spinner-overlay";
 import { constants } from "../core/constants";
-import { strNaoVazioValorMinimo, mostraMsg, mostraMsgForm, storeData, storeJson, logar, getPastaArmazenamentoExterno, getPastaArmazenamentoInterno } from "../core/utils";
+import { strNaoVazioValorMinimo, mostraMsg, mostraMsgForm, mostraMsgFormAlto, storeData, storeJson, logar, getPastaArmazenamentoExterno, getPastaArmazenamentoInterno } from "../core/utils";
 import { Header } from '../../components/header';
 import { useToast } from "react-native-toast-notifications";
 import { theme } from "../core/theme";
@@ -141,13 +141,14 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
     );
     if (telError) {
       setIdTelefone({ ...idTelefone, error: telError });
-      // mostraMsgForm(telError, true, toast);      
+      mostraMsgForm(telError, true, toast);      
       setSpinner(false);
       return;
     }
 
     // Aqui atualizo variavel global da identificação do telefone
-    mostraMsg(`Identificador do telefone salvo com sucesso!`, "success", global.dropDownAlertRef);
+    // mostraMsg(`Identificador do telefone salvo com sucesso!`, "success", global.dropDownAlertRef);
+    mostraMsgFormAlto(`Identificador do telefone salvo com sucesso!`, false, toast);  
     logar(`Usuario alterou o id do telefone para: ${idTelefone.value}`);
     storeData("@id_telefone", idTelefone.value);
 

@@ -15,30 +15,12 @@ import {
 } from './src/helpers/ThemeReducer';
 import SplashScreen from 'react-native-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-
-// TODO: Usar outro pacote para travar a Orientacao, esse tava dando problema
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import Orientation from 'react-native-orientation';
 import KeepAwake from 'react-native-keep-awake';
-import { ToastProvider } from 'react-native-toast-notifications'
+import { ToastProvider } from 'react-native-toast-notifications';
+import { theme } from "./src/n_views/core/theme";
 
-// Originais RNE
-const theme = {
-  colors: {
-    primary: '#19427b',
-    primary1: '#4d86f7',
-    primary2: '#6296f9',
-    secondary: '#414757',
-    secondary2: '#00B233',
-    secondary3: '#00FF48',
-    grey1: '#43484d',
-    grey2: '#5e6977',
-    grey3: '#86939e',
-    grey4: '#bdc6cf',
-    grey5: '#e1e8ee',
-    dkGreyBg: '#232323',
-    greyOutline: '#cbd2d9'
-  }
-};
 
 export default () => {
   const [ThemeState, dispatch] = useReducer(ThemeReducer, initialState);
@@ -133,7 +115,15 @@ export default () => {
     <ThemeReducerContext.Provider value={{ ThemeState, dispatch }}>
       <ThemeProvider theme={theme} useDark={ThemeState.themeMode === 'dark' ? true : false}>
         <SafeAreaProvider>
-          <ToastProvider>
+          <ToastProvider 
+            successIcon={<FontAwesome5 name="check" style={{ color: "#fff", marginRight: 15 }} />}
+            warningIcon={<FontAwesome5 name="exclamation-triangle" style={{ color: "#fff", marginRight: 15 }} />}            
+            dangerIcon={<FontAwesome5 name="times" style={{ color: "#fff", marginRight: 15 }} />}
+            successColor={theme.colors.success}
+            dangerColor={theme.colors.error}
+            warningColor={theme.colors.warning}
+            normalColor={theme.colors.normal}
+          >
             <RootNavigator />
           </ToastProvider>
         </SafeAreaProvider>

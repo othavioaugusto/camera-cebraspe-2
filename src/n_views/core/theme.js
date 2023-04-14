@@ -1,9 +1,11 @@
 export const theme = {
   colors: {
-    primary: "#343434",
-    secondary: "#414757",
-    error: "#f13a59",
+    primary: "#00385E",
+    secondary: "#F0F0F0",
+    error: "#EB584D",
     success: "#00B386",
+    warning: "#EB9C71",
+    normal: "#007EC2",
     laranja_cebraspe: "#a16c02",
     verde_cebraspe: "#12A15C",
     app_container_app: "#F0F0F0",

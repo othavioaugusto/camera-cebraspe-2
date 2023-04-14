@@ -22,7 +22,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Spinner from "react-native-loading-spinner-overlay";
 var RNFS = require("react-native-fs");
 import moment from "moment-timezone";
-import { mostraMsg, mostraMsgForm, storeData, logar, getPastaArmazenamentoExterno, getPastaArmazenamentoInterno } from "../core/utils";
+import { mostraMsg, mostraMsgForm, mostraMsgFormAlto, mostraMsgFormAltoTipo, storeData, logar, getPastaArmazenamentoExterno, getPastaArmazenamentoInterno } from "../core/utils";
 import ListaVazia from "../core/components/ListaVazia";
 import { Header } from '../../components/header';
 import { useToast } from "react-native-toast-notifications";
@@ -153,7 +153,8 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
         setPasta(folder.pasta);
 
       } catch (error) {
-        mostraMsg("Erro ao carregar os Vídeos Gravados. ", "error", global.dropDownAlertRef);
+        // mostraMsg("Erro ao carregar os Vídeos Gravados. ", "error", global.dropDownAlertRef);
+        mostraMsgFormAlto("Erro ao carregar os Vídeos Gravados.", true, toast);
         setListaVazia({
           value: true,
           msg: error.toString()
@@ -164,7 +165,7 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
 
     } else {
       logar(`Usuario nao confirmou a permissao para acesso de escrita e leitura dos arquivos.`);
-      mostraMsgForm("Preciso de todas as permissões para continuar.", true, toast);
+      mostraMsgFormAlto("Preciso de todas as permissões para continuar.", true, toast);
       return false;
     }
 
@@ -271,7 +272,8 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
       }
 
     } catch (error) {
-      mostraMsg("Erro ao acessar os Vídeos Gravados no armazenamento externo. ", "error", global.dropDownAlertRef);
+      // mostraMsg("Erro ao acessar os Vídeos Gravados no armazenamento externo. ", "error", global.dropDownAlertRef);
+      mostraMsgFormAlto("Erro ao acessar os Vídeos Gravados no armazenamento externo.", true, toast);
       return;
     }
   }
@@ -319,7 +321,8 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
         vazio = mp4s.length === 0;
 
         if (vazio) {
-          mostraMsg("Não existem vídeos gravados no armazenamento interno. ", "warn", global.dropDownAlertRef);
+          // mostraMsg("Não existem vídeos gravados no armazenamento interno. ", "warn", global.dropDownAlertRef);
+          mostraMsgFormAltoTipo("Não existem vídeos gravados no armazenamento interno. ", "warning", toast);
         } else {
           // this.setState({
           //   data: mp4s
@@ -359,7 +362,8 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
           // console.log(`=> Videos ja tem: ${JSON.stringify(videosCopiarJaTem)}`);
 
           if (videosCopiar.length === 0) {
-            mostraMsg("As pastas estão sincronizadas. ", "info", global.dropDownAlertRef);
+            // mostraMsg("As pastas estão sincronizadas. ", "info", global.dropDownAlertRef);
+            mostraMsgFormAltoTipo(`As pastas estão sincronizadas.`, "normal", toast);
             atualizaUltimaSincronizacao(true);
           } else {
             copiarVideosParaArmazExterno(pastaArmazenamentoInterno, pastaArmazenamentoExterno, videosCopiar);
@@ -369,13 +373,15 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
         };
 
       } catch (error) {
-        mostraMsg("Erro ao acessar os Vídeos Gravados. ", "error", global.dropDownAlertRef);
+        // mostraMsg("Erro ao acessar os Vídeos Gravados. ", "error", global.dropDownAlertRef);
+        mostraMsgFormAlto(`Erro ao acessar os Vídeos Gravados. `, true, toast);
         setSpinner(false);
         return;
       }
 
     } else {
-      mostraMsg("Não existe armazenamento externo (SDCard)", "error", global.dropDownAlertRef);
+      // mostraMsg("Não existe armazenamento externo (SDCard)", "error", global.dropDownAlertRef);
+      mostraMsgFormAlto(`Não existe armazenamento externo (SDCard)`, true, toast);
     }
 
     setSpinner(false);

@@ -14,7 +14,7 @@ import {
 } from 'react-native-elements';
 import { View, StyleSheet, PermissionsAndroid, Dimensions, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 // import { Header } from '../../components/header';
-import { strNaoVazioValorMinimo, strNaoVazioValorMinimoSomenteNome, mostraMsg, mostraMsgForm, storeData, logar, getPastaArmazenamentoInterno, getPastaArmazenamentoExterno, getSDCardPathCameraCebraspeModule } from "../core/utils";
+import { strNaoVazioValorMinimo, strNaoVazioValorMinimoSomenteNome, mostraMsg, mostraMsgFormAltoTipoNaCamera, mostraMsgForm, storeData, logar, getPastaArmazenamentoInterno, getPastaArmazenamentoExterno, getSDCardPathCameraCebraspeModule } from "../core/utils";
 import LinearGradient from 'react-native-linear-gradient';
 import { constants } from "../core/constants";
 import { getPermissao_WRITE_EXTERNAL_STORAGE, getPermissao_READ_EXTERNAL_STORAGE } from "../core/permissoes";
@@ -190,7 +190,8 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
             storeData("@entrada_manual", "");
 
         } else if (msg.length > 0) {
-            mostraMsg(msg, tipo, global.dropDownAlertRef);
+            // mostraMsg(msg, tipo, global.dropDownAlertRef);
+            mostraMsgFormAltoTipoNaCamera(msg, "danger", Toast);
         }
 
         setUniqueValue(uniqueValue + 1);
@@ -305,13 +306,15 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         let msgErro = '';
         if (idTelError) {
             msgErro = `A identificação do telefone é obrigatória! Preencha o identificador do telefone acessando o item Configurações do menu.`;
-            mostraMsg(msgErro, "error", global.dropDownAlertRef);
+            // mostraMsg(msgErro, "error", global.dropDownAlertRef);
+            mostraMsgFormAltoTipoNaCamera(msgErro, "danger", Toast);
             logar(`Erro: Video nao iniciou pois, ${msgErro}`);
             return false;
         } else if (codEventoError || idUsuarioError || idSalaError) {
             msgErro = `Todos os campos devem ser preenchidos: ${idSalaError ? idSalaError + ', ' : ''}${codEventoError ? codEventoError + ', ' : ''}${idUsuarioError ? idUsuarioError + ', ' : ''}`;
             msgErro = msgErro.substring(0, msgErro.lastIndexOf(', '));
-            mostraMsg(msgErro, "error", global.dropDownAlertRef);
+            // mostraMsg(msgErro, "error", global.dropDownAlertRef);
+            mostraMsgFormAltoTipoNaCamera(msgErro, "danger", Toast);
             logar(`Erro: Video nao iniciou pois, ${msgErro}`);
             return false;
         }
@@ -330,7 +333,8 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
 
             if (isPortrait) {
                 const msgErro = `Para iniciar a gravação, o celular precisa estar na horizontal!`;
-                mostraMsg(msgErro, "error", global.dropDownAlertRef);
+                // mostraMsg(msgErro, "error", global.dropDownAlertRef);
+                mostraMsgFormAltoTipoNaCamera(msgErro, "danger", Toast);
                 logar(`Erro: Video nao iniciou pois, ${msgErro}`);
             } else {
                 callback();
@@ -434,11 +438,19 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                                 if (jsonFormulario?.dados?.length > 0) {
                                     navegar("FormularioInfoScreen", { jsonFormulario: JSON.stringify(jsonFormulario), arquivoVideo: nomeArquivoDados, msgVideoSucesso: msgVideoArmazenadoInterno });
                                 } else {
-                                    mostraMsg(
-                                        `${msgVideoArmazenadoInterno}${msgVideoArmazenadoExterno}`,
-                                        "info",
-                                        global.dropDownAlertRef7000
-                                    );
+                                    // mostraMsg(
+                                    //     `${msgVideoArmazenadoInterno}${msgVideoArmazenadoExterno}`,
+                                    //     "info",
+                                    //     global.dropDownAlertRef7000
+                                    // );
+                                    
+                                    Toast.show(`${msgVideoArmazenadoInterno}${msgVideoArmazenadoExterno}`, {                                        
+                                        type: "success",
+                                        placement: "top",
+                                        duration: 7000,    
+                                        animationType: "slide-in",
+                                        style: { marginTop: 25 }
+                                      });
                                 }
                             }
 
@@ -466,11 +478,12 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
     };
 
     const mostraMsgPai = (mensagem, tipo) => {
-        mostraMsg(
-            mensagem,
-            tipo,
-            global.dropDownAlertRefNoClose
-        );
+        // mostraMsg(
+        //     mensagem,
+        //     tipo,
+        //     global.dropDownAlertRefNoClose
+        // );
+        mostraMsgFormAltoTipoNaCamera(mensagem, tipo, Toast);
     };
 
     const acabouVerificaVideoStopNormal = () => {
@@ -733,13 +746,13 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
             console.warn(`Saindo da gravacao! Disco cheio!`);
             mostraMsgPai(
                 "Sem espaço em disco! Libere espaço em disco e tente novamente!",
-                "warn"
+                "warning"
             );
         } else if (tipo === 2) {
             console.warn(`Saindo da gravacao! Falha: Tela preta!`);
             mostraMsgPai(
                 "Falha na gravação do vídeo! Reinicie a gravação!",
-                "warn"
+                "warning"
             );
         }
     };
@@ -984,7 +997,8 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         const { params } = route;
         const show_msg = params ? params.show_msg : params;
         if (show_msg) {
-            mostraMsg(show_msg.msg, show_msg.tipo, global.dropDownAlertRef);
+            // mostraMsg(show_msg.msg, show_msg.tipo, global.dropDownAlertRef);
+            mostraMsgFormAltoTipoNaCamera(show_msg.msg, show_msg.tipo,  Toast);
         }
         setIsModalNovoSalaVisible(false);
     }, []);

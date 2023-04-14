@@ -87,9 +87,7 @@ const QRCodeScreen: React.FunctionComponent<QRCodeScreenProps> = ({ route, navig
         if(codEvento && idUsuario) {          
           setCodEvento(codEvento);
           setIdUsuario(idUsuario);
-
-          // TODO: Arrumar aqui
-          // this.refs.alertaModalNovoUsuario.open();
+          
           setIsModalNovoUsuarioVisible(true);
         } else {
           logar(`ERRO: QR Code - ${tipoQrCode} - Invalido: ${e.data}`);
@@ -104,9 +102,7 @@ const QRCodeScreen: React.FunctionComponent<QRCodeScreenProps> = ({ route, navig
         if(idSala) {
           setIdSala(dados.idSala);
           setJsonFormulario(dados.formulario || {});
-
-          // TODO: Arrumar aqui
-          // this.refs.alertaModalNovoSala.open();
+          
           setIsModalNovoSalaVisible(true);
         } else {
           logar(`ERRO: QR Code - ${tipoQrCode} - Invalido: ${e.data}`);
@@ -349,8 +345,7 @@ const QRCodeScreen: React.FunctionComponent<QRCodeScreenProps> = ({ route, navig
 
   // Dessa forma soh chama na primeira vez
   useEffect(() => {
-    console.log(`== Carregando tela ==`);
-    // preencheConfiguracoes();
+    console.log(`== Carregando tela ==`);    
   }, []);
 
   const inputProps = {};

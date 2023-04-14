@@ -196,6 +196,51 @@ const mostraMsgForm = (msg, erro, Toast) => {
   });
 };
 
+const mostraMsgFormAlto = (msg, erro, Toast) => {
+  Toast.show(msg, {
+    // type: "normal | success | warning | danger | custom",
+    // placement: "top | bottom",
+    // duration: 4000,
+    // offset: 30,
+    // animationType: "slide-in | zoom-in",
+    type: erro ? "danger" : "success",
+    placement: "top",
+    duration: 4000,    
+    animationType: "slide-in",
+    style: { marginTop: 70 }
+  });
+};
+
+const mostraMsgFormAltoTipo = (msg, tipo, Toast) => {
+  Toast.show(msg, {
+    // type: "normal | success | warning | danger | custom",
+    // placement: "top | bottom",
+    // duration: 4000,
+    // offset: 30,
+    // animationType: "slide-in | zoom-in",
+    type: tipo,
+    placement: "top",
+    duration: 4000,    
+    animationType: "slide-in",
+    style: { marginTop: 70 }
+  });
+};
+
+const mostraMsgFormAltoTipoNaCamera = (msg, tipo, Toast) => {
+  Toast.show(msg, {
+    // type: "normal | success | warning | danger | custom",
+    // placement: "top | bottom",
+    // duration: 4000,
+    // offset: 30,
+    // animationType: "slide-in | zoom-in",
+    type: tipo,
+    placement: "top",
+    duration: 4000,    
+    animationType: "slide-in",
+    style: { marginTop: 25 }
+  });
+};
+
 const tratarPalavra = (palavraTratar) => {
   palavraTratar = palavraTratar.replace(/[ÀÁÂÃÄÅ]/, "A");
   palavraTratar = palavraTratar.replace(/[àáâãäå]/, "a");
@@ -443,5 +488,8 @@ module.exports = {
   getSDCardPathCameraCebraspeModule,
   getPastaArmazenamentoExterno,
   getPastaArmazenamentoInterno,
-  criaPreencheArquivoFormularioPadrao
+  criaPreencheArquivoFormularioPadrao,
+  mostraMsgFormAlto,
+  mostraMsgFormAltoTipo,
+  mostraMsgFormAltoTipoNaCamera
 };

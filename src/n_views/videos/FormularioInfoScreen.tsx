@@ -16,7 +16,7 @@ import ContainerApp from "../core/components/ContainerApp";
 var RNFS = require("react-native-fs");
 import Spinner from "react-native-loading-spinner-overlay";
 import { constants } from "../core/constants";
-import { mostraMsg, getPastaArmazenamentoInterno, criaPreencheArquivoFormularioPadrao } from "../core/utils";
+import { mostraMsg, mostraMsgFormAlto, getPastaArmazenamentoInterno, criaPreencheArquivoFormularioPadrao } from "../core/utils";
 import { Header } from '../../components/header';
 import { useToast } from "react-native-toast-notifications";
 import { theme } from "../core/theme";
@@ -126,12 +126,14 @@ const FormularioInfoScreen: React.FunctionComponent<FormularioInfoComponentProps
         return { OK: true, existsInterno: existsInterno, arquivoVideoInterno: arquivoVideoInterno };
       } catch (err1) {
         msgErro = `Erro ao recuperar arquivo! As informações não serão salvas!`;
-        mostraMsg(msgErro, "error", global.dropDownAlertRef);
+        // mostraMsg(msgErro, "error", global.dropDownAlertRef);
+        mostraMsgFormAlto(msgErro, true, toast);
         return { ERRO: msgErro };
       }
     } else {
       msgErro = `Não foi possível recuperar o arquivo! As informações não serão salvas!`;
-      mostraMsg(msgErro, "error", global.dropDownAlertRef);
+      // mostraMsg(msgErro, "error", global.dropDownAlertRef);
+      mostraMsgFormAlto(msgErro, true, toast);
       return { ERRO: msgErro };
     }
   }
@@ -153,7 +155,8 @@ const FormularioInfoScreen: React.FunctionComponent<FormularioInfoComponentProps
     if (OK) {
       await atualizarArquivoFormulario(arquivoVideoInterno);
       if (arquivoVideoInterno && arquivoVideoInterno.length > 0) {
-        mostraMsg(`Dados salvos com sucesso!`, "success", global.dropDownAlertRef);
+        // mostraMsg(`Dados salvos com sucesso!`, "success", global.dropDownAlertRef);
+        mostraMsgFormAlto(`Dados salvos com sucesso!`, false, toast);
       }
     }
   }
@@ -195,11 +198,12 @@ const FormularioInfoScreen: React.FunctionComponent<FormularioInfoComponentProps
 
     if (!veioDaLista && msgVideoSucesso) {
 
-      mostraMsg(
-        msgVideoSucesso,
-        "info",
-        global.dropDownAlertRef7000
-      );
+      // mostraMsg(
+      //   msgVideoSucesso,
+      //   "info",
+      //   global.dropDownAlertRef7000
+      // );
+      mostraMsgFormAlto(msgVideoSucesso, false, toast);
 
       const jsonFormularioParam = JSON.parse(jsonFormulario) || constants.jsonFormularioPadrao;
       setJsonFormulario(jsonFormularioParam);
