@@ -187,6 +187,7 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
 
   const renderVideosCopiados = () => {
     let lista = JSON.parse(JSON.stringify(sincroniza.videosACopiadosLista));
+    console.log(`== Videos copiados: ${JSON.stringify(sincroniza.videosACopiadosLista)}`);
     return (
       <>
         {sincroniza.mostraMsgApresentacao ? renderMensagemSincronizacao() : undefined}
@@ -198,21 +199,6 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
               <Text style={{ color: theme.colors.btn_trash }}>{sincroniza.msgArqVideo}</Text>
             }
           </View>
-
-          <FlatList
-            data={lista}
-            renderItem={({ item }) => (
-              <ListItem>
-                <Body style={{ flexDirection: "row", flex: 4 }} >
-                  <Text>{item.name}</Text>
-                </Body>
-                <Right style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", flex: 0.5 }} >
-                  <FontAwesome5 name="check" style={{ color: theme.colors.btn_success }} />
-                </Right>
-              </ListItem>
-            )}
-            keyExtractor={(item) => item.name}
-          />
         </View>
       </>
     );
@@ -441,6 +427,8 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
 
         console.log(`= FIM COPIAR VIDEO ARMEXTERNO: ${moment(new Date()).format("DD/MM/YYYY HH:mm:ss")}`);
 
+        mostraMsgFormAltoTipo(`Finalizado! ${indice} vídeos copiados!`, "success", toast);
+
         logarVideosCopiadosOK(strVideosCopiadosOKLog);
         logarVideosCopiadosERRO(videosCopiadosERRO);
 
@@ -502,6 +490,7 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
 
   const onPlayPressed = async (nomeArquivo) => {
     const enderecoVideo = 'file://' + pasta + '/' + nomeArquivo;
+    console.log('onPlayPressed');
     logar(`Usuario assistiu o video: ${enderecoVideo}`);
     navegar("VideoPlay", { arquivoVideo: enderecoVideo });
   }
@@ -703,6 +692,7 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
             }
             data={data}
             renderItem={({ item }) => (
+              
               <ListItem.Swipeable
                 // onPress={log}
                 bottomDivider
@@ -722,10 +712,11 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
                       fontSize: 13,
                       color: '#fff',
                     }}
-                    onPress={() => onPlayPressed(item.name)}
+                    // onPress={() => onPlayPressed(item.name)}
+                    onPress={() => console.log('Appendei o log no arquivo interno BRASILLLL!')}
                   />
                 }
-                leftStyle={{ backgroundColor: '#fff', padding: 5 }}
+                leftStyle={{ backgroundColor: '#fff', alignItems: "center", justifyContent: "center", padding: 5 }}
                 rightContent={
                   <>
                     <View style={{
@@ -780,15 +771,41 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
                 rightStyle={{ backgroundColor: '#fff', padding: 5, flexDirection: "row", alignItems: "center", justifyContent: "center" }}
               >
                 {/* <Icon name={item.icon} /> */}
-                <ListItem.Content style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "flex-start", flex: 3.5 }}>
+                <ListItem.Content style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+                
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", flex: 1 }}>
+                  <Button 
+                    title={"Play"}                   
+                    icon={
+                      <FontAwesome5 name="play" size={20} style={{ color: "#fff", paddingRight: 10 }} />
+                    }
+                    buttonStyle={{
+                      width: "100%",
+                      backgroundColor: theme.colors.btn_success,
+                      borderRadius: 5,
+                    }}
+                    titleStyle={{
+                      fontFamily: 'regular',
+                      fontSize: 13,
+                      color: '#fff',
+                    }}
+                    // onPress={() => onPlayPressed(item.name)}
+                    onPress={() => console.log('Appendei o log no arquivo interno TESTEEEE!')}
+                  />
+                </View>
+
+                <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "flex-start", flex: 3.2 }}>
                   <ListItem.Title>{item.name}</ListItem.Title>
-                </ListItem.Content>
-                <ListItem.Content style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "flex-end", flex: 1.5 }} >
+                </View>
+                <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "flex-end", flex: 1 }} >
                   <ListItem.Subtitle>{moment(new Date(item.mtime)).format("DD/MM/YYYY HH:mm:ss")}</ListItem.Subtitle>
-                </ListItem.Content>
-                <ListItem.Content style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "flex-end", flex: 0.8 }} >
+                </View>
+                <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "flex-end", flex: 0.8 }} >
                   <ListItem.Subtitle>{formatBytes(item.size)}</ListItem.Subtitle>
+                </View>
+                  
                 </ListItem.Content>
+                
 
               </ListItem.Swipeable>
             )}
@@ -796,9 +813,9 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
           />
         ) : (
           seg === 2 ?
-            // <View style={{ flex: 1 }}>
-            renderVideosCopiados()
-            // </View>
+            <View style={{ flex: 1 }}>
+              {renderVideosCopiados()}
+            </View>
             : renderListaVazia()
         )}
 
@@ -869,7 +886,8 @@ const styles = StyleSheet.create({
   viewMsgSincronizar: {
     width: "100%",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    // bottom: 80
   },
   bottomView: {
     backgroundColor: theme.colors.container_bg,

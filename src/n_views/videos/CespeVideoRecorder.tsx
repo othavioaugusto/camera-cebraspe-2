@@ -55,9 +55,9 @@ const wbOrder = {
 
 const landmarkSize = 2;
 
-//   let qualidadeSelect = constants.qualidade;
-//   let ratioSelect = constants.ratio;
-//   let videoBitRateSelect = constants.videoBitRate;
+// let qualidadeSelect = constants.qualidade;
+// let ratioSelect = constants.ratio;
+// let videoBitRateSelect = constants.videoBitRate;
 
 let currentTime;
 let verificaEspacoDisco5s;
@@ -140,6 +140,11 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
     const [nomeArquivoVideo, setNomeArquivoVideo] = useState("");
     const [jsonFormulario, setJsonFormulario] = useState({});
     const [uniqueValue, setUniqueValue] = useState(1);
+
+    const [flagQualidade, setFlagQualidade]  = useState(false);
+    useEffect(() => {
+        recarregaConfiguracoesTela()
+      }, [flagQualidade]);
 
     const InputFieldsStyle = {
         borderWidth: 0,
@@ -380,9 +385,9 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                     // O ERRO ESTAVA AQUI, NAO POSSO PASSAR O PATH CARAIIIIIIIIIIIIII!!!!!!                    
                     // Olha a merda. No Android 11 nao posso passar o Path pra funcionar.
                     // No Android 12 sou abrigado a passar o Path
-                    let options = { recordOptions };
+                    let options = recordOptions;
                     if (apiLevel > 30) {
-                        options = { recordOptions, path: nomeArqVideo };
+                        options = { ...options, path: nomeArqVideo };
                     }
 
                     // Records a video, saves it in your app's cache directory and returns a promise when stopRecording is called or either maxDuration or maxFileSize specified are reached.
@@ -849,7 +854,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
     }
 
     const renderModalBodyNovoUsuario = () => {
-        Clipboard.setString(' ');
+        Clipboard.setString('');
         return (
             <ListItem.Content style={{ flexDirection: "row" }} >
                 <Input
@@ -863,6 +868,9 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                     returnKeyType="next"
                     onChangeText={(text: string) => setCodEvento({ ...codEvento, error: "", value: text.trim() })}
                     errorMessage={codEvento.error.length > 0 ? codEvento.error : undefined}
+                    contextMenuHidden={true}
+                    caretHidden={true}
+                    
                 />
 
                 <Input
@@ -876,6 +884,8 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                     returnKeyType="next"
                     onChangeText={(text: string) => setIdUsuario({ ...idUsuario, error: "", value: text.trim() })}
                     errorMessage={idUsuario.error.length > 0 ? idUsuario.error : undefined}
+                    contextMenuHidden={true}
+                    caretHidden={true}
                 />
 
             </ListItem.Content>
@@ -883,7 +893,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
     };
 
     const renderModalBodyNovoSala = () => {
-        Clipboard.setString(' ');
+        // Clipboard.setString('');
         // console.log('-- Renderizando renderModalBodyNovoSala --');
         return (
             <ListItem.Content>
@@ -897,6 +907,8 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                     value={idSala.value}
                     onChangeText={(text: string) => setIdSala({ ...idSala, error: "", value: text.trim() })}
                     errorMessage={idSala.error.length > 0 ? idSala.error : undefined}
+                    contextMenuHidden={true}
+                    caretHidden={true}
                 />
             </ListItem.Content>
         );

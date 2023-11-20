@@ -1,4 +1,4 @@
-package com.camcebraspe2;
+package com.camcebraspe;
 
 import android.os.Bundle;
 import com.facebook.react.ReactActivity;

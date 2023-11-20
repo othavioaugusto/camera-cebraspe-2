@@ -1,4 +1,4 @@
-package com.camcebraspe2;
+package com.camcebraspe;
 
 import android.os.StatFs;
 import com.facebook.react.bridge.Callback;
@@ -141,12 +141,12 @@ public class CameraCebraspeModule extends ReactContextBaseJavaModule {
 
         try {
             // Se trouxer alguma coisa eh pq achou o Erro            
-            // String command = String.format("logcat -t 200 com.camcebraspe2:D *:W");
-            // String[] command = { "/bin/sh", "-c", "logcat -t 200 com.camcebraspe2:D *:W | grep 'CameraSource: Timed out waiting for incoming camera video frames: 0 us'" };
-            // String[] command = { "/bin/sh", "-c", "logcat -t 200 com.camcebraspe2:D *:W | grep '2S:'" };
+            // String command = String.format("logcat -t 200 com.camcebraspe:D *:W");
+            // String[] command = { "/bin/sh", "-c", "logcat -t 200 com.camcebraspe:D *:W | grep 'CameraSource: Timed out waiting for incoming camera video frames: 0 us'" };
+            // String[] command = { "/bin/sh", "-c", "logcat -t 200 com.camcebraspe:D *:W | grep '2S:'" };
 
             // ISSO NÃO PEGA PQ SOH CONSEGUE LER O LOG DO PROPRIO APP
-            // String[] command = { "/bin/sh", "-c", "logcat -t 200 com.camcebraspe2:D *:W | grep 'CameraSource: Timed out waiting for incoming camera video frames: 0 us'" };
+            // String[] command = { "/bin/sh", "-c", "logcat -t 200 com.camcebraspe:D *:W | grep 'CameraSource: Timed out waiting for incoming camera video frames: 0 us'" };
             String[] command = { "/bin/sh", "-c", "logcat -t 200" };
 
             Process process = Runtime.getRuntime().exec(command);

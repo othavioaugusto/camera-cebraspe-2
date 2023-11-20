@@ -1,4 +1,4 @@
-package com.camcebraspe2;
+package com.camcebraspe;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;

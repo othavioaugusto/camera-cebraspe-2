@@ -2,10 +2,9 @@
 var RNFS = require("react-native-fs");
 const absolutePath = RNFS.DownloadDirectoryPath + "/cebraspe-video-recorder";
 const constants =
-{
-    qualidade: "480p",
-    // qualidade: "4:3",
-    videoBitRate: (0.75*1000*1000), // Padrao: (6*1000*1000)
+{    
+    qualidade: "4:3",
+    videoBitRate: (0.75*1000*1000), // Padrao: (6*1000*1000) "default"
     ratio: "4:3",
     espacoBytesDiscoCheio: 10000000,
     tempoGravacao: "10",
