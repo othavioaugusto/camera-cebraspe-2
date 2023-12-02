@@ -105,6 +105,11 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         // Abaixo o videoBitrate fixo definido pelo Cebraspe
         videoBitrate: constants.videoBitRate
     });
+    const [txtQualidadeBitRate, setTxtQualidadeBitRate] = useState({        
+        txtQualidade: constants.dadosQualidadeVideo[0].opcoes.filter((o) => o.value == constants.qualidade)[0].desc,        
+        txtVideoBitrate: constants.dadosQualidadeVideo[1].opcoes.filter((o) => o.value == constants.videoBitRate)[0].desc
+    });
+
     const [isRecording, setIsRecording] = useState(false);
     const [noIntervalo, setNoIntervalo] = useState(false);
     const [canDetectFaces, setCanDetectFaces] = useState(false);
@@ -141,10 +146,11 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
     const [jsonFormulario, setJsonFormulario] = useState({});
     const [uniqueValue, setUniqueValue] = useState(1);
 
-    const [flagQualidade, setFlagQualidade]  = useState(false);
-    useEffect(() => {
-        recarregaConfiguracoesTela()
-      }, [flagQualidade]);
+
+    // const [flagQualidade, setFlagQualidade]  = useState(false);
+    // useEffect(() => {
+    //     recarregaConfiguracoesTela()
+    //   }, [flagQualidade]);
 
     const InputFieldsStyle = {
         borderWidth: 0,
@@ -389,6 +395,8 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                     if (apiLevel > 30) {
                         options = { ...options, path: nomeArqVideo };
                     }
+
+                    console.log(`- NA CAMERA OPTIONS: ${JSON.stringify(options)}`);
 
                     // Records a video, saves it in your app's cache directory and returns a promise when stopRecording is called or either maxDuration or maxFileSize specified are reached.
                     const promise = camera.recordAsync(options);
@@ -922,10 +930,16 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         const selecaoVazia = '[{"id":"Vazio"}]';
         const selecoes = await AsyncStorage.getItem("@selecoes_key") || selecaoVazia;
         const selecoesStorage = JSON.parse(selecoes);
-        const qualidade = qualidadeSelect;
+        // const qualidade = qualidadeSelect;
         const ratio = ratioSelect;
 
-        const videoBitRate = videoBitRateSelect;
+        // const videoBitRate = videoBitRateSelect;
+
+        const qualidade = await AsyncStorage.getItem("@qualidade_key") || qualidadeSelect;
+        console.log(`- Qualidade[CespeVideoRecorder]: ${qualidade}`);
+
+        const videoBitRate = await AsyncStorage.getItem("@videobitrate_key") || videoBitRateSelect;
+        console.log(`- Video BitRateSelect[CespeVideoRecorder]: ${videoBitRate}`);
 
         const codEvento = await AsyncStorage.getItem("@cod_evento") || codEventoSelect;
         const idUsuario = await AsyncStorage.getItem("@id_usuario") || idUsuarioSelect;
@@ -949,12 +963,18 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         setIdUsuario({ error: "", value: idUsuario });
         setIdSala({ error: "", value: idSala });
 
-        console.log(`= Na Camera, setando videoBitRate para [${videoBitRate}] e qualidade para [${qualidade}]`);
+        setTxtQualidadeBitRate({        
+            txtQualidade: constants.dadosQualidadeVideo[0].opcoes.filter((o) => o.value == qualidade)[0].desc,        
+            txtVideoBitrate: constants.dadosQualidadeVideo[1].opcoes.filter((o) => o.value == videoBitRate)[0].desc
+        });
+
+        console.log(`= Na Camera, setando videoBitRate para [${videoBitRate}] e qualidade para [${qualidade}] e [${RNCamera.Constants.VideoQuality["4:3"]}]`);
 
         setRecordOptions({
             ...recordOptions,
             quality: RNCamera.Constants.VideoQuality[qualidade],
-            videoBitrate: videoBitRate === "default" ? (6 * 1000 * 1000) : parseInt(videoBitRate)
+            // videoBitrate: videoBitRate === "default" ? (6 * 1000 * 1000) : parseInt(videoBitRate)
+            videoBitrate: parseInt(videoBitRate)            
         });
 
 
@@ -1266,6 +1286,13 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                                             <Text style={styles.flipText}>-</Text>
                                         </TouchableOpacity>
                                     </View>}
+                                
+                                {!isRecording &&
+                                    <View style={styles.viewQualidadeBitRate}>
+                                        <Text style={{ color: "#fff" }}>Qualidade: {txtQualidadeBitRate.txtQualidade}</Text>
+                                        <Text style={{ color: "#fff" }}>BitRate: {txtQualidadeBitRate.txtVideoBitrate}</Text>
+                                    </View>
+                                }
                             </View>
 
                             <View style={styles.viewsCandidatoSala} >
@@ -1508,8 +1535,13 @@ const styles = StyleSheet.create({
     viewFuncionalidades: {
         flex: 1,
         justifyContent: "center",
-        alignItems: "center",
+        alignItems: "center",        
         paddingBottom: 10
+    },
+    viewQualidadeBitRate: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "flex-start",                
     },
     viewsCandidatoSala: {
         width: "50%",

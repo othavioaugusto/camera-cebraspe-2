@@ -19,6 +19,7 @@ import { constants } from "../core/constants";
 import { strNaoVazioValorMinimo, mostraMsg, mostraMsgForm, mostraMsgFormAlto, storeData, storeJson, logar, getPastaArmazenamentoExterno, getPastaArmazenamentoInterno } from "../core/utils";
 import { Header } from '../../components/header';
 import { useToast } from "react-native-toast-notifications";
+import { Dropdown } from 'react-native-element-dropdown';
 import { theme } from "../core/theme";
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -49,7 +50,10 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
     { titulo: "Foco", desc: "Habilitar a função foco da câmera", selecionado: false, id: "FUNC_FOCO" },
     { titulo: "Botão Apagar", desc: "Habilitar botão que permite apagar vídeo", selecionado: false, id: "FUNC_BOT_APAGAR" },
   ]);
-  const [qualidadeSelect, setQualidadeSelect] = useState(constants.videoBitRate);
+  const [qualidadeSelect, setQualidadeSelect] = useState(constants.qualidade);
+  const [videoBitRateSelect, setVideoBitRate] = useState(constants.videoBitRate+"");
+  
+
   const [ratioSelect, setRatioSelect] = useState(constants.ratio);
   const [tempoGravacaoSelect, setTempoGravacaoSelect] = useState(constants.tempoGravacao);
 
@@ -97,6 +101,10 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
     setSpinner(true);
     zeraErrosAnteriores();
 
+    const datasTmp = constants.dadosQualidadeVideo;
+
+    setDatas(datasTmp);
+
     const pastaArmazenamentoExterno = await getPastaArmazenamentoExterno();
     const pastaArmazenamentoInterno = await getPastaArmazenamentoInterno();
 
@@ -106,8 +114,12 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
     setDisableCaminhoArqExterno(true);
 
     const qualidade = await AsyncStorage.getItem("@qualidade_key") || qualidadeSelect;
-    console.log(`- Qualidade [videoBitRate]: ${qualidade}`);
+    console.log(`- Qualidade: ${qualidade}`);
     setQualidadeSelect(qualidade);
+
+    const bitrate = await AsyncStorage.getItem("@videobitrate_key") || videoBitRateSelect;
+    console.log(`- Video BitRateSelect: ${bitrate}`);
+    setVideoBitRate(bitrate);
 
     const selecoesStorage = JSON.parse(await AsyncStorage.getItem("@selecoes_key")) || selecoes;
     const selecoesTmp = [];
@@ -255,6 +267,111 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
                         onValueChange={() => alteraStatusSelecoes(item.id)}
                       />
                     </ListItem>
+                  ))}
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  {datas.map((item, i) => (
+                  <ListItem bottomDivider>
+                      <ListItem.Content>
+                        <ListItem.Title>{item.titulo}</ListItem.Title>
+                        <ListItem.Subtitle>{item.desc}</ListItem.Subtitle>                        
+                          <Dropdown
+                            style={styles.dropdown}
+                            placeholderStyle={styles.placeholderStyle}
+                            selectedTextStyle={styles.selectedTextStyle}                          
+                            data={item.opcoes}                          
+                            maxHeight={300}
+                            labelField="desc"
+                            valueField="value"
+                            placeholder="Selecione um item"                          
+                            value={ item.id === 1 ? qualidadeSelect : videoBitRateSelect}
+                            onChange={(value) => {                              
+                              let valor = value.value;
+                              if (item.id === 1) {
+                                setQualidadeSelect(valor);
+                                logar(`Usuário alterou a qualidade para: ${valor}`);
+                                storeData("@qualidade_key", valor);
+                              } else {
+                                setVideoBitRate(valor)
+                                logar(`Usuário alterou o videobitrate para: ${valor}`);
+                                storeData("@videobitrate_key", valor);
+                              }
+                            }}
+                          />
+                      </ListItem.Content>
+                    {/* { item.id !== 4  &&
+                      <Item style={{ ...styles.itemInputContainer, width: "100%" }}>
+                        <Picker
+                          mode="dropdown"
+                          iosIcon={<Icon name="ios-arrow-down" />}
+                          style={{
+                            width: "100%"
+                          }}
+                          placeholderStyle={{ color: "#bfc6ea" }}
+                          placeholderIconColor="#007aff"
+                          selectedValue={ (item.id === 1 || item.id === 2) ? 
+                            (item.id === 1 ? this.state.qualidadeSelect : this.state.ratioSelect) : 
+                            this.state.tempoGravacaoSelect }
+                          onValueChange={(value) => {
+                            if (item.id === 1) {
+                              this.setState({ qualidadeSelect: value });
+                              logar(`Usuário alterou a qualidade para: ${value}`);
+                              storeData("@qualidade_key", value);
+                            } else if(item.id === 2) {
+                              this.setState({ ratioSelect: value });
+                              logar(`Usuário alterou o ratio para: ${value}`);
+                              storeData("@ratio_key", value);
+                            }
+                          }}
+                        >
+                          {item.opcoes.map((opcao, i) => {
+                            return (
+                              <Picker.Item
+                                label={opcao.desc}
+                                value={opcao.value}
+                                key={i}
+                              />
+                            );
+                          })}
+                        </Picker>
+                      </Item>
+                    } */}
+                    
+                    {/* TRATANDO SOMENTE O NOVO VIDEOBITRATE */}
+                                         
+                    {/*   
+                      { item.id == 2  &&
+                        <ListItem style={{ ...styles.itemInputContainer, width: "100%" }}>
+                        <Picker
+                          mode="dropdown"
+                          iosIcon={<Icon name="ios-arrow-down" />}
+                          style={{
+                            width: "100%"
+                          }}
+                          placeholderStyle={{ color: "#bfc6ea" }}
+                          placeholderIconColor="#007aff"
+                          selectedValue={ this.state.qualidadeSelect }
+                          onValueChange={(value) => {                            
+                            this.setState({ qualidadeSelect: value });
+                            logar(`Usuário alterou o video bitrate para: ${value}`);
+                            storeData("@qualidade_key", value);                            
+                          }}
+                        >
+                          {item.opcoes.map((opcao, i) => {
+                            return (
+                              <Picker.Item
+                                label={opcao.desc}
+                                value={opcao.value}
+                                key={i}
+                              />
+                            );
+                          })}
+                        </Picker>
+                      </ListItem> 
+                    }
+                    */}                   
+                   </ListItem>
                   ))}
                 </View>
 
@@ -411,5 +528,18 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'center',
+  },
+  dropdown: {
+    // margin: 16,
+    height: 50,
+    width: 300,
+    borderBottomColor: 'gray',
+    borderBottomWidth: 0.5,
+  },
+  placeholderStyle: {
+    fontSize: 16,
+  },
+  selectedTextStyle: {
+    fontSize: 16,
   },
 });
