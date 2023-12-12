@@ -106,7 +106,7 @@ const VideoPlay: React.FunctionComponent<VideoPlayComponentProps> = ({ route, na
 
   // -> MODELO DE USEEFFECT
   useEffect(() => {
-    // -> Aqui vai a alogica para componentWillMount. componentDidMount e componentDidUpdate  
+    // -> Aqui vai a alogica para componentWillMount. componentDidMount e componentDidUpdate
     setPaused(false);
     setArquivoVideo(route.params.arquivoVideo);
     // hideNavigationBar();
@@ -132,6 +132,7 @@ const VideoPlay: React.FunctionComponent<VideoPlayComponentProps> = ({ route, na
           onBack={() => goBack({ msg: "", tipo: "" })}
           tapAnywhereToPause={true}
           disableVolume={true}
+          resizeMode="contain"          
         />
         : <></>}
 

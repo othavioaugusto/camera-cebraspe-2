@@ -490,7 +490,7 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
 
   const onPlayPressed = async (nomeArquivo) => {
     const enderecoVideo = 'file://' + pasta + '/' + nomeArquivo;
-    console.log('onPlayPressed');
+    console.log(`onPlayPressed: ${enderecoVideo}`);
     logar(`Usuario assistiu o video: ${enderecoVideo}`);
     navegar("VideoPlay", { arquivoVideo: enderecoVideo });
   }
@@ -696,27 +696,26 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
               <ListItem.Swipeable
                 // onPress={log}
                 bottomDivider
-                leftContent={
-                  <Button 
-                    title={"Play"}                   
-                    icon={
-                      <FontAwesome5 name="play" size={20} style={{ color: "#fff", paddingRight: 10 }} />
-                    }
-                    buttonStyle={{
-                      width: "100%",
-                      backgroundColor: theme.colors.btn_success,
-                      borderRadius: 5,
-                    }}
-                    titleStyle={{
-                      fontFamily: 'regular',
-                      fontSize: 13,
-                      color: '#fff',
-                    }}
-                    // onPress={() => onPlayPressed(item.name)}
-                    onPress={() => console.log('Appendei o log no arquivo interno BRASILLLL!')}
-                  />
-                }
-                leftStyle={{ backgroundColor: '#fff', alignItems: "center", justifyContent: "center", padding: 5 }}
+                // leftContent={
+                //   <Button 
+                //     title={"Play"}                   
+                //     icon={
+                //       <FontAwesome5 name="play" size={20} style={{ color: "#fff", paddingRight: 10 }} />
+                //     }
+                //     buttonStyle={{
+                //       width: "100%",
+                //       backgroundColor: theme.colors.btn_success,
+                //       borderRadius: 5,
+                //     }}
+                //     titleStyle={{
+                //       fontFamily: 'regular',
+                //       fontSize: 13,
+                //       color: '#fff',
+                //     }}
+                //     onPress={() => onPlayPressed(item.name)}                    
+                //   />
+                // }
+                // leftStyle={{ backgroundColor: '#fff', alignItems: "center", justifyContent: "center", padding: 5 }}
                 rightContent={
                   <>
                     <View style={{
@@ -789,8 +788,7 @@ const VideosScreen: React.FunctionComponent<VideosScreenProps> = ({ route, navig
                       fontSize: 13,
                       color: '#fff',
                     }}
-                    // onPress={() => onPlayPressed(item.name)}
-                    onPress={() => console.log('Appendei o log no arquivo interno TESTEEEE!')}
+                    onPressIn={() => onPlayPressed(item.name)}                    
                   />
                 </View>
 

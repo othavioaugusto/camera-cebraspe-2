@@ -61,7 +61,7 @@ const landmarkSize = 2;
 
 let currentTime;
 let verificaEspacoDisco5s;
-let camera;
+let camera: RNCamera | null;
 
 // We are importing the native Java module here
 import { NativeModules } from 'react-native';
@@ -399,7 +399,16 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                     console.log(`- NA CAMERA OPTIONS: ${JSON.stringify(options)}`);
 
                     // Records a video, saves it in your app's cache directory and returns a promise when stopRecording is called or either maxDuration or maxFileSize specified are reached.
-                    const promise = camera.recordAsync(options);
+                    let promise;
+                    try {
+                        promise = camera.recordAsync(options);
+                    } catch (erroRecordAsync) {
+                        console.error(`ERRO erroRecordAsync: ${erroRecordAsync}`);
+                        logar(`Gravacao nao iniciou por causa do erro: ${erroRecordAsync}`);
+                        stopVideo(3, erroRecordAsync);
+                        setSpinner(false);
+                    }
+                    
 
                     if (promise) {
                         // KeepAwake.activate();
@@ -524,7 +533,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                         pai.setState({
                             parouPorTelaPreta: true
                         });
-                        pai.stopVideo(2);
+                        pai.stopVideo(2,'');
                     } else {
                         console.log(`== Tudo certo, arquivo OK!`);
                         return;
@@ -558,7 +567,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
             const espacoBytes = parseInt(espacoLivreEmDisco);
             if (espacoBytes <= constants.espacoBytesDiscoCheio) {
                 logar(`Sistema parou o video por falta de espaco em disco. Espaco em disco: ${espacoBytes}`);
-                pai.stopVideo(1);
+                pai.stopVideo(1,'');
             }
         }, 2000);
     };
@@ -572,7 +581,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
 
     const simPressPararModal = () => {
         logar(`Usuario parou o video.`);
-        stopVideo(0);
+        stopVideo(0,'');
     }
 
     const startVideoCliqueBotao = async () => {
@@ -600,7 +609,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         const espacoBytes = parseInt(espacoLivreEmDisco);
         if (espacoBytes <= constants.espacoBytesDiscoCheio) {
             logar(`Video nao iniciou por falta de espaco em disco. Espaco em disco: ${espacoBytes}`);
-            stopVideo(1);
+            stopVideo(1,'');
         } else {
             takeVideo();
         }
@@ -738,7 +747,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         setJsonFormulario([]);
     }
 
-    const stopVideo = async (tipo) => {
+    const stopVideo = async (tipo, msg) => {
 
         // 0: Parou Normal
         // 1: Disco Cheio
@@ -765,6 +774,13 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
             console.warn(`Saindo da gravacao! Falha: Tela preta!`);
             mostraMsgPai(
                 "Falha na gravação do vídeo! Reinicie a gravação!",
+                "warning"
+            );
+        }
+        else if (tipo === 3) {
+            console.warn(`Saindo da gravacao! Falha: ${msg}`);
+            mostraMsgPai(
+                `Falha na gravação do vídeo: ${msg}`,
                 "warning"
             );
         }
@@ -946,8 +962,6 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         const idSala = await AsyncStorage.getItem("@id_sala") || idSalaSelect;
         const jsonFormulario = await AsyncStorage.getItem("@json_formulario") || jsonFormulario;
 
-        console.log(`- Qualidade: ${qualidade} - Ratio: ${ratio}`);
-
         setQualidadeSelect(qualidade);
         setRatioSelect(ratio);
         setVideoBitRateSelect(videoBitRate);
@@ -968,7 +982,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
             txtVideoBitrate: constants.dadosQualidadeVideo[1].opcoes.filter((o) => o.value == videoBitRate)[0].desc
         });
 
-        console.log(`= Na Camera, setando videoBitRate para [${videoBitRate}] e qualidade para [${qualidade}] e [${RNCamera.Constants.VideoQuality["4:3"]}]`);
+        console.log(`= Na Camera, setando videoBitRate para [${videoBitRate}] e qualidade para [${qualidade}] e [${RNCamera.Constants.VideoQuality[qualidade]}]`);
 
         setRecordOptions({
             ...recordOptions,
