@@ -1,7 +1,8 @@
 import React from 'react';
 import { Easing } from 'react-native';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
-import CespeVideoRecorder from './CespeVideoRecorder';
+// import CespeVideoRecorder from './CespeVideoRecorder';
+import {CespeVisionCamera as CespeVideoRecorder} from '../visioncamera/CespeVisionCamera'
 import QRCodeScreen from './QRCodeScreen';
 
 const Stack = createStackNavigator();
