@@ -1,13 +1,13 @@
 import React from 'react';
 import { Easing } from 'react-native';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
-// import CespeVideoRecorder from './CespeVideoRecorder';
-import {CespeVisionCamera as CespeVideoRecorder} from '../visioncamera/CespeVisionCamera'
+import CespeVideoRecorder from './CespeVideoRecorder';
+import CespeVisionCamera from '../visioncamera/CespeVisionCamera'
 import QRCodeScreen from './QRCodeScreen';
 
 const Stack = createStackNavigator();
 
-export default function VideoRecorderRotas({ ComponentePrincipal = CespeVideoRecorder }) {
+export default function VideoRecorderRotas({ ComponentePrincipal = CespeVisionCamera }) {
 
     const timingConfig = {
         animation: 'timing',
@@ -24,7 +24,7 @@ export default function VideoRecorderRotas({ ComponentePrincipal = CespeVideoRec
             close: timingConfig,
         }
     }}>
-        <Stack.Screen name='CespeVideoRecorder' component={ComponentePrincipal} />        
+        <Stack.Screen name='CespeVisionCamera' component={ComponentePrincipal} />        
         <Stack.Screen name='QRCodeScreen' component={QRCodeScreen} />
     </Stack.Navigator>);
 }
