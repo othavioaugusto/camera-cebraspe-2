@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -11,7 +11,14 @@ import {
   ListItem,
   Switch,
   InputProps,
+  CheckBox
 } from 'react-native-elements';
+import {
+  CameraDeviceFormat,
+  sortFormats,
+  useCameraDevices,
+  frameRateIncluded
+} from 'react-native-vision-camera';
 import ContainerApp from "../core/components/ContainerApp";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Spinner from "react-native-loading-spinner-overlay";
@@ -27,6 +34,34 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 type ConfiguracoesScreenProps = {};
 
 const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = ({ route, navigation }) => {
+
+  const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('back');
+
+  // camera format settings
+  // const devices = useCameraDevices();
+  // const device = devices[cameraPosition];
+  // const formats = useMemo<CameraDeviceFormat[]>(() => {
+  //   if (device?.formats == null) return [];
+  //   return device.formats.sort(sortFormats);
+  // }, [device?.formats]);
+
+  // const formatosSuportados = useMemo(() => {
+  //   let result = global.camera_formats;
+    
+  //   // Filtro somente por formatos q nao suportam HDF
+  //   result = result.filter((f) => !f.supportsVideoHDR && f.videoWidth);    
+
+  //   // find the first format that includes the given FPS
+  //   // const retorno = result.find((f) => f.frameRateRanges.some((r) => frameRateIncluded(r, 30)));
+  //   // console.log(`RETORNO_FORMAT_SELECIONADO: ${JSON.stringify(retorno)}`);
+
+  //   // return retorno;
+
+  //   return result;
+
+  // }, [formats]);
+
+  const [formatosSuportados, setFormatosSuportados] = useState([]);
 
   const toast = useToast();
 
@@ -53,6 +88,7 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
   const [qualidadeSelect, setQualidadeSelect] = useState(constants.qualidade);
   const [videoBitRateSelect, setVideoBitRate] = useState(constants.videoBitRate+"");
   
+  const [configQualidadeSelect, setConfigQualidadeSelect] = useState(JSON.stringify(constants.configQualidadeVideoPadrao));
 
   const [ratioSelect, setRatioSelect] = useState(constants.ratio);
   const [tempoGravacaoSelect, setTempoGravacaoSelect] = useState(constants.tempoGravacao);
@@ -79,6 +115,12 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
     setCaminhoArq({ ...caminhoArq, error: "" });
     setCaminhoArqExterno({ ...caminhoArqExterno, error: "" });
     return;
+  }
+
+  const alteraConfigQualidade = async (item) => {    
+    setConfigQualidadeSelect(JSON.stringify(item));
+    storeJson("@configQualidade_key", JSON.stringify(item));
+    logar(`Uusario alterou a configuracao do video para: ${JSON.stringify(item)}`);
   }
 
   const alteraStatusSelecoes = async (id) => {
@@ -108,6 +150,10 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
     const pastaArmazenamentoExterno = await getPastaArmazenamentoExterno();
     const pastaArmazenamentoInterno = await getPastaArmazenamentoInterno();
 
+    // console.log(`CONFIG FORMATOS SUPORTADOS: ${JSON.stringify(global.camera_formats)}`);
+
+    setFormatosSuportados(global.camera_formats);
+
     setCaminhoArq({ ...caminhoArq, value: pastaArmazenamentoInterno.pasta });
     setCaminhoArqExterno({ ...caminhoArqExterno, value: pastaArmazenamentoExterno.sucesso ? pastaArmazenamentoExterno.pasta : "Não existe armazenamento externo (SDCard)" });
     setDisableCaminhoArq(true);
@@ -120,6 +166,10 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
     const bitrate = await AsyncStorage.getItem("@videobitrate_key") || videoBitRateSelect;
     console.log(`- Video BitRateSelect: ${bitrate}`);
     setVideoBitRate(bitrate);
+
+    const confQualidade = JSON.parse(await AsyncStorage.getItem("@configQualidade_key")) || configQualidadeSelect;
+    console.log(`- Config Qualidade: ${confQualidade}`);
+    setConfigQualidadeSelect(confQualidade);    
 
     const selecoesStorage = JSON.parse(await AsyncStorage.getItem("@selecoes_key")) || selecoes;
     const selecoesTmp = [];
@@ -136,6 +186,7 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
 
     const idTelefone = await AsyncStorage.getItem("@id_telefone") || "";
     setIdTelefone({ ...idTelefone, value: idTelefone });
+
     setSpinner(false);
   }
 
@@ -167,6 +218,14 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
     setSpinner(false);
 
     return true;
+  }
+
+  const removeCamposJsonConfigApresentacao = async (item) => {    
+    console.log(`Chamei 1 removeCamposJsonConfigApresentacao: ${JSON.stringify(item)}`);
+    let retorno = Object.assign({}, item);
+    delete retorno.photoHeight;
+    console.log(`Chamei 2 removeCamposJsonConfigApresentacao: ${JSON.stringify(retorno)}`);
+    return retorno.toString();
   }
 
   //-> MODELO DE USEEFFECT
@@ -409,6 +468,34 @@ const ConfiguracoesScreen: React.FunctionComponent<ConfiguracoesScreenProps> = (
                       />
                     </ListItem.Content>
                   </ListItem>
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <ListItem>
+                    <ListItem.Content>
+                      <ListItem.Title>Selecione a configuração desejada:</ListItem.Title>                      
+                    </ListItem.Content>
+                  </ListItem>
+                  {formatosSuportados.map((item, i) => (
+                    <ListItem bottomDivider containerStyle={{backgroundColor: configQualidadeSelect == JSON.stringify(item) ? theme.colors.app_bg_enable : null}}>
+                      <ListItem.Content style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+                        {/* <ListItem.Subtitle>{JSON.stringify(item, null, 2)}</ListItem.Subtitle> */}
+                        <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "flex-start", flex: 2 }}>
+                          <ListItem.Subtitle>{removeCamposJsonConfigApresentacao(item)}</ListItem.Subtitle>                          
+                        </View>
+                        <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "flex-start", flex: 2 }}>
+                          <ListItem.Subtitle>{JSON.stringify(item.frameRateRanges, null, 2)}</ListItem.Subtitle>
+                        </View>
+                      </ListItem.Content>
+                      <CheckBox
+                        center                        
+                        checkedIcon='dot-circle-o'
+                        uncheckedIcon='circle-o'
+                        checked={configQualidadeSelect == JSON.stringify(item)}
+                        onPress={() => alteraConfigQualidade(item)}
+                      />
+                    </ListItem>
+                  ))}
                 </View>
 
               </View>

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Button,
     Dialog,
@@ -8,6 +8,11 @@ import {
     Avatar,
     Header
 } from 'react-native-elements';
+import {
+    CameraDeviceFormat,
+    sortFormats,
+    useCameraDevices,
+  } from 'react-native-vision-camera';
 import { View, Text, StyleSheet, PermissionsAndroid } from 'react-native';
 // import { Header } from '../../components/header';
 import { strNaoVazioValorMinimo, mostraMsg, mostraMsgForm, storeData, storeJson, logar, getPastaArmazenamentoExterno, getPastaArmazenamentoInterno } from "../core/utils";
@@ -15,6 +20,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import LogoTelaDescanso from "../core/components/LogoTelaDescanso";
 import { theme } from "../core/theme";
 import DeviceInfo from 'react-native-device-info';
+import { Camera } from 'react-native-vision-camera';
 import { hideNavigationBar, showNavigationBar } from "react-native-navigation-bar-color";
 import { getPermissao_WRITE_EXTERNAL_STORAGE, getPermissao_READ_EXTERNAL_STORAGE } from "../core/permissoes";
 import ContainerApp from '../core/components/ContainerApp';
@@ -24,6 +30,18 @@ type LoginScreenProps = {};
 const LoginScreen: React.FunctionComponent<LoginScreenProps> = ({ route, navigation }) => {
 
     const [spinner, setSpinner] = useState(false);
+
+    // camera format settings
+    const devices = useCameraDevices();
+    const device = devices['back'];
+    global.camera_formats = [];
+    global.camera_formats = useMemo<CameraDeviceFormat[]>(() => {
+        if (device?.formats == null) return [];
+        let retorno = device.formats.sort(sortFormats);;
+        retorno = retorno.filter((f) => !f.supportsVideoHDR && f.videoWidth);
+        console.log(`-- Setando global.camera_formats: ${retorno}`);                
+        return retorno;
+    }, [device?.formats]);
 
     const navegar = (tela, params) => {
         navigation.navigate(tela, { ...params });
@@ -39,11 +57,16 @@ const LoginScreen: React.FunctionComponent<LoginScreenProps> = ({ route, navigat
         let month = today.getMonth() + 1;
         let year = today.getFullYear();
 
+        const newCameraPermission = await Camera.requestCameraPermission();
+        const newMicrophonePermission = await Camera.requestMicrophonePermission();
+
         const granted_WRITE_EXTERNAL_STORAGE = await getPermissao_WRITE_EXTERNAL_STORAGE();
         const granted_READ_EXTERNAL_STORAGE = await getPermissao_READ_EXTERNAL_STORAGE();
 
         if (granted_WRITE_EXTERNAL_STORAGE &&
             granted_READ_EXTERNAL_STORAGE === PermissionsAndroid.RESULTS.GRANTED) {
+
+            
 
             console.log(`-- Permissoes já concedidas --`);
 

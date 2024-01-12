@@ -23,7 +23,7 @@
     "src/**/*.tsx",
     "src/**/*.ts",
     "App.tsx"
-  ],
+, "src/n_views/visioncamera/views/CaptureButton.tsx", "src/n_views/visioncamera/CebraspeVisionCamera.tsx_OLD", "src/n_views/visioncamera/CebraspeVisionCamera_ORIGINAL.tsx_OLD"  ],
   "exclude": [
     ".ci",
     "web-build",

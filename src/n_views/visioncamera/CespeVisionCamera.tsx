@@ -8,6 +8,8 @@ import {
     Linking,
     Image,
 } from 'react-native';
+import { strNaoVazioValorMinimo, strNaoVazioValorMinimoSomenteNome, mostraMsg, mostraMsgFormAltoTipoNaCamera, mostraMsgForm, storeData, logar, getPastaArmazenamentoInterno, getPastaArmazenamentoExterno, getSDCardPathCameraCebraspeModule } from "../core/utils";
+var RNFS = require("react-native-fs");
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 
 type CespeVisionCameraProps = {};
@@ -17,7 +19,8 @@ const CespeVisionCamera: React.FunctionComponent<CespeVisionCameraProps> = ({ ro
     const devices = useCameraDevices();
     const device = devices.back;
 
-    const [showCamera, setShowCamera] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [showCamera, setShowCamera] = useState(true);
     const [imageSource, setImageSource] = useState('');
 
     useEffect(() => {
@@ -37,6 +40,42 @@ const CespeVisionCamera: React.FunctionComponent<CespeVisionCameraProps> = ({ ro
         }
     };
 
+    const onStoppedRecording = async (video) => {
+        setIsRecording(false);
+        let folder = await getPastaArmazenamentoInterno();
+        const novoNomeArqVideo = `${folder.pasta}/novovideocomvisioncamera.mp4`;
+        console.log(`- Vou copiar o arquivo: ${video.path} para: ${novoNomeArqVideo}`);
+        await RNFS.moveFile( video.path, novoNomeArqVideo);
+        // cancelAnimation(recordingProgress);
+        console.log('stopped recording video!');
+      };
+
+    const captureVideo = async () => {
+        console.log(`- Chamei captureVideo!`);
+        if (camera.current !== null) {
+            await camera.current.startRecording({
+                flash: 'on',
+                onRecordingFinished: (video) => {
+                    console.log(`Recording successfully finished! ${video.path}`);
+                    //onMediaCaptured(video, 'video');
+                    onStoppedRecording(video);
+                  },
+                onRecordingError: (error) => console.error(error),
+              });
+            setIsRecording(true);
+            //setImageSource(photo.path);
+            //setShowCamera(false);
+            //console.log(photo.path);
+        }
+    };
+
+    const stopVideoCliqueBotao = async () => {
+        console.log(`- Chamei stopVideoCliqueBotao!`);
+        if (camera.current !== null) {
+            const uri = await camera.current.stopRecording();            
+        }
+    };
+
     if (device == null) {
         return <Text>Camera not available</Text>;
     }
@@ -50,13 +89,15 @@ const CespeVisionCamera: React.FunctionComponent<CespeVisionCameraProps> = ({ ro
                         style={StyleSheet.absoluteFill}
                         device={device}
                         isActive={showCamera}
-                        photo={true}
+                        video={true}
+                        audio={true}
                     />
 
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity
                             style={styles.camButton}
-                            onPress={() => capturePhoto()}
+                            // onPress={() => capturePhoto()}
+                            onPress={() => isRecording ? stopVideoCliqueBotao() : captureVideo() }
                         />
                     </View>
                 </>
@@ -102,6 +143,21 @@ const CespeVisionCamera: React.FunctionComponent<CespeVisionCameraProps> = ({ ro
                                 onPress={() => setShowCamera(true)}>
                                 <Text style={{ color: '#77c3ec', fontWeight: '500' }}>
                                     Retake
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#fff',
+                                    padding: 10,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    borderRadius: 10,
+                                    borderWidth: 2,
+                                    borderColor: '#77c3ec',
+                                }}
+                                onPress={() => captureVideo()}>
+                                <Text style={{ color: '#77c3ec', fontWeight: '500' }}>
+                                    Capture Video
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity

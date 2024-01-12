@@ -4,7 +4,7 @@ const absolutePath = RNFS.DownloadDirectoryPath + "/cebraspe-video-recorder";
 const constants =
 {
   qualidade: "4:3",
-  videoBitRate: (0.75*1000*1000), // Padrao: (6*1000*1000) "default"
+  videoBitRate: (0.75 * 1000 * 1000), // Padrao: (6*1000*1000) "default"
   ratio: "4:3",
   espacoBytesDiscoCheio: 10000000,
   tempoGravacao: "10",
@@ -23,6 +23,66 @@ const constants =
         "linhas": 5
       }
     ]
+  },
+  configQualidadeVideoPadrao: {
+    "autoFocusSystem": "none",
+    "frameRateRanges": [
+      {
+        "maxFrameRate": 30,
+        "minFrameRate": 1
+      },
+      {
+        "maxFrameRate": 15,
+        "minFrameRate": 15
+      },
+      {
+        "maxFrameRate": 20,
+        "minFrameRate": 15
+      },
+      {
+        "maxFrameRate": 20,
+        "minFrameRate": 20
+      },
+      {
+        "maxFrameRate": 24,
+        "minFrameRate": 24
+      },
+      {
+        "maxFrameRate": 30,
+        "minFrameRate": 8
+      },
+      {
+        "maxFrameRate": 30,
+        "minFrameRate": 10
+      },
+      {
+        "maxFrameRate": 30,
+        "minFrameRate": 15
+      },
+      {
+        "maxFrameRate": 30,
+        "minFrameRate": 30
+      }
+    ],
+    "supportsPhotoHDR": false,
+    "supportsVideoHDR": false,
+    "minISO": 40,
+    "colorSpaces": [
+      "jpeg"
+    ],
+    "videoStabilizationModes": [
+      "off",
+      "cinematic"
+    ],
+    "maxZoom": 8,
+    "pixelFormat": "420v",
+    "fieldOfView": 66.27300449774273,
+    "maxISO": 2000,
+    "isHighestPhotoQualitySupported": false,
+    "videoWidth": 720,
+    "videoHeight": 480,
+    "photoWidth": 1088,
+    "photoHeight": 1088
   },
   dadosQualidadeVideo: [
     {

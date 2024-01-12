@@ -1,21 +1,14 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Button,
-    Dialog,
-    CheckBox,
     ListItem,
-    Avatar,
-    Header,
     Text,
     Input,
-    Switch,
-    InputProps,
 } from 'react-native-elements';
 import { View, StyleSheet, PermissionsAndroid, Dimensions, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 // import { Header } from '../../components/header';
-import { strNaoVazioValorMinimo, strNaoVazioValorMinimoSomenteNome, mostraMsg, mostraMsgFormAltoTipoNaCamera, mostraMsgForm, storeData, logar, getPastaArmazenamentoInterno, getPastaArmazenamentoExterno, getSDCardPathCameraCebraspeModule } from "../core/utils";
-import LinearGradient from 'react-native-linear-gradient';
+import { strNaoVazioValorMinimo, strNaoVazioValorMinimoSomenteNome, mostraMsgFormAltoTipoNaCamera, mostraMsgForm, storeData, logar, getPastaArmazenamentoInterno, getPastaArmazenamentoExterno, getSDCardPathCameraCebraspeModule } from "../core/utils";
 import { constants } from "../core/constants";
 import { getPermissao_WRITE_EXTERNAL_STORAGE, getPermissao_READ_EXTERNAL_STORAGE } from "../core/permissoes";
 import ContainerApp from '../core/components/ContainerApp';
@@ -26,6 +19,7 @@ import PararModal from '../core/components/PararModal';
 import moment from "moment-timezone";
 import Spinner from "react-native-loading-spinner-overlay";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import { RNCamera } from "react-native-camera";
 import { Stopwatch } from "react-native-stopwatch-timer";
@@ -34,6 +28,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Clipboard from '@react-native-community/clipboard';
 import Orientation from 'react-native-orientation';
 import { useToast } from "react-native-toast-notifications";
+import { Camera, useCameraDevices } from 'react-native-vision-camera';
+import { useIsFocused } from '@react-navigation/core';
 
 import { theme } from "../core/theme";
 
@@ -53,26 +49,24 @@ const wbOrder = {
     incandescent: "auto",
 };
 
+const BUTTON_SIZE = 40;
+
 const landmarkSize = 2;
-
-// let qualidadeSelect = constants.qualidade;
-// let ratioSelect = constants.ratio;
-// let videoBitRateSelect = constants.videoBitRate;
-
 let currentTime;
-let verificaEspacoDisco5s;
-let camera: RNCamera | null;
+let verificaEspacoDisco5s: string | number | NodeJS.Timeout | undefined;
 
 // We are importing the native Java module here
 import { NativeModules } from 'react-native';
 
-type CespeVideoRecorderProps = {};
+type NovoCespeVideoRecorderProps = {};
 
-const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ route, navigation }) => {
+const NovoCespeVideoRecorder: React.FunctionComponent<NovoCespeVideoRecorderProps> = ({ route, navigation }) => {
 
     const { CameraCebraspeModule } = NativeModules;
 
-    let alertaModalNovoSala = useRef();
+    const camera = useRef(null);
+    const devices = useCameraDevices();
+    const device = devices.back;
 
     const Toast = useToast();
 
@@ -145,7 +139,11 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
     const [nomeArquivoVideo, setNomeArquivoVideo] = useState("");
     const [jsonFormulario, setJsonFormulario] = useState({});
     const [uniqueValue, setUniqueValue] = useState(1);
+    const [format, setFormat] = useState();
 
+    const [isCameraInitialized, setIsCameraInitialized] = useState(false);
+
+    const isActive = true;
 
     // const [flagQualidade, setFlagQualidade]  = useState(false);
     // useEffect(() => {
@@ -274,17 +272,6 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         setDepth(novoFocus);
     }
 
-    const setFocusDepth = (depth) => {
-        setDepth(depth);
-    }
-
-    const takePicture = async function () {
-        if (camera) {
-            const data = await camera.takePictureAsync();
-            console.log("takePicture ", data);
-        }
-    };
-
     const getValidaPreenchimentoDadosQRCode = async () => {
         // Verifica soh os armazenados nas variaveis @
         const idSala = await AsyncStorage.getItem("@id_sala");
@@ -354,17 +341,158 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
 
     }
 
-    const takeVideo = async () => {
+    // const takeVideo = async () => {
+    //     Orientation.unlockAllOrientations();
+
+    //     // Tentando essa solucao para o problema da gravacao tela preta        
+    //     setUniqueValue(uniqueValue + 1);
+
+    //     if (camera && !isRecording) {
+    //         try {
+    //             let folder = await getPastaArmazenamentoInterno();
+    //             let folderExterno = await getPastaArmazenamentoExterno();
+
+    //             let dados = await getValidaPreenchimentoDadosQRCode();
+    //             if (!dados) {
+    //                 console.log('Dados invalidos retornando!');
+    //                 Orientation.lockToLandscape();
+    //                 return;
+    //             }
+
+    //             let codEvento = dados.codEvento + '-';
+    //             let idUsuario = dados.idUsuario + '-';
+    //             let idSala = dados.idSala + '-';
+    //             let idTelefone = dados.idTelefone + '-';
+
+    //             let entradaManual = await AsyncStorage.getItem("@entrada_manual") || "";
+    //             entradaManual = entradaManual === "M" ? ('-' + entradaManual) : "";
+
+    //             console.log(`- Folder: ${folder.pasta}`);
+    //             console.log(`== FOLDER INTERNO: ${folder.sucesso} - == FOLDER EXTERNO: ${folderExterno.sucesso} - `);
+
+    //             // const thisPai = this;
+    //             async function iniciarGravacao() {
+
+    //                 const apiLevel = global.api_level;
+    //                 let nomeArqVideo = folder.pasta + "/_temporario_" + "video.mp4";
+    //                 // O ERRO ESTAVA AQUI, NAO POSSO PASSAR O PATH CARAIIIIIIIIIIIIII!!!!!!                    
+    //                 // Olha a merda. No Android 11 nao posso passar o Path pra funcionar.
+    //                 // No Android 12 sou abrigado a passar o Path
+    //                 let options = recordOptions;
+    //                 if (apiLevel > 30) {
+    //                     options = { ...options, path: nomeArqVideo };
+    //                 }
+
+    //                 console.log(`- NA CAMERA OPTIONS: ${JSON.stringify(options)}`);
+
+    //                 // Records a video, saves it in your app's cache directory and returns a promise when stopRecording is called or either maxDuration or maxFileSize specified are reached.
+    //                 let promise;
+    //                 try {
+    //                     promise = camera.recordAsync(options);
+    //                 } catch (erroRecordAsync) {
+    //                     console.error(`ERRO erroRecordAsync: ${erroRecordAsync}`);
+    //                     logar(`Gravacao nao iniciou por causa do erro: ${erroRecordAsync}`);
+    //                     stopVideo(3, erroRecordAsync);
+    //                     setSpinner(false);
+    //                 }
+                    
+
+    //                 if (promise) {
+    //                     // KeepAwake.activate();
+    //                     toggleStopwatch();
+
+    //                     setIsRecording(true);
+    //                     setParouPorTelaPreta(false);
+    //                     setNomeArquivoVideo("");
+
+    //                     // Caso volta a usar takeVideoSchedule retirar essa linha abaixo pois eh feito lah
+    //                     verificaStopGravacaoDiscoCheio2s(folder.pasta);
+    //                     // this.takeVideoSchedule(folder);
+
+    //                     // monitoraLogCat();
+    //                     if (apiLevel > 30) {
+    //                         console.log(`- VERSAO DO ANDROID: [${apiLevel}]`);
+    //                         verificaTamanhoArqTemporario(nomeArqVideo, 1);
+    //                     }
+
+    //                     logar(`Gravacao de video iniciada!`);
+
+    //                     // hideNavigationBar();
+
+    //                     const data = await promise;
+
+    //                     // showNavigationBar();                    
+
+    //                     setIsRecording(false);
+    //                     setFlash("off");
+
+    //                     try {
+    //                         setSpinner(true);
+    //                         const uri = data.uri.replace("file://", "");
+    //                         console.log(`- URI: ${uri} - FOLDER INTERNO: ${folder.pasta} - EXTERNO: ${folderExterno.pasta}`);
+    //                         const nomeArquivoDados = `${codEvento}${idSala}${idUsuario}${idTelefone}${moment(new Date()).format("DDMMYYHHmmss")}${entradaManual}.mp4`;
+    //                         const novoNomeArqVideo = `${folder.pasta}/${nomeArquivoDados}`;
+
+    //                         zeraCronometro();
+
+    //                         if (!parouPorTelaPreta) {
+    //                             await RNFS.moveFile(uri, novoNomeArqVideo);
+    //                             const msgVideoArmazenadoInterno = `O vídeo foi armazenado em ${novoNomeArqVideo}.`;
+    //                             let msgVideoArmazenadoExterno = '';
+
+    //                             logar(`Gravacao de video finalizada! ${msgVideoArmazenadoInterno}${msgVideoArmazenadoExterno}`);
+
+    //                             // TODO: Aqui chamada ao Modal de preencher formulario
+    //                             console.log(`- CHAMANDO jsonFORM: ${JSON.stringify(jsonFormulario)}`);
+    //                             if (jsonFormulario?.dados?.length > 0) {
+    //                                 navegar("FormularioInfoScreen", { jsonFormulario: JSON.stringify(jsonFormulario), arquivoVideo: nomeArquivoDados, msgVideoSucesso: msgVideoArmazenadoInterno });
+    //                             } else {
+    //                                 // mostraMsg(
+    //                                 //     `${msgVideoArmazenadoInterno}${msgVideoArmazenadoExterno}`,
+    //                                 //     "info",
+    //                                 //     global.dropDownAlertRef7000
+    //                                 // );
+                                    
+    //                                 Toast.show(`${msgVideoArmazenadoInterno}${msgVideoArmazenadoExterno}`, {                                        
+    //                                     type: "success",
+    //                                     placement: "top",
+    //                                     duration: 7000,    
+    //                                     animationType: "slide-in",
+    //                                     style: { marginTop: 25 }
+    //                                   });
+    //                             }
+    //                         }
+
+    //                         setSpinner(false);
+
+    //                         return true;
+
+    //                     } catch (err) {
+    //                         console.error(err);
+    //                         setSpinner(false);
+    //                     }
+
+    //                     return true;
+    //                 }
+
+    //             }
+
+    //             verificaPosicaoHorizontal(iniciarGravacao);
+
+    //         } catch (err) {
+    //             console.log(err);
+    //             return false;
+    //         }
+    //     }
+    // };
+
+    const novoTakeVideo = async () => {
         Orientation.unlockAllOrientations();
 
-        // Tentando essa solucao para o problema da gravacao tela preta        
-        setUniqueValue(uniqueValue + 1);
+        if (camera.current !== null && !isRecording) {
+            let folder = await getPastaArmazenamentoInterno();
 
-        if (camera && !isRecording) {
             try {
-                let folder = await getPastaArmazenamentoInterno();
-                let folderExterno = await getPastaArmazenamentoExterno();
-
                 let dados = await getValidaPreenchimentoDadosQRCode();
                 if (!dados) {
                     console.log('Dados invalidos retornando!');
@@ -372,121 +500,45 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                     return;
                 }
 
-                let codEvento = dados.codEvento + '-';
-                let idUsuario = dados.idUsuario + '-';
-                let idSala = dados.idSala + '-';
-                let idTelefone = dados.idTelefone + '-';
-
-                let entradaManual = await AsyncStorage.getItem("@entrada_manual") || "";
-                entradaManual = entradaManual === "M" ? ('-' + entradaManual) : "";
-
-                console.log(`- Folder: ${folder.pasta}`);
-                console.log(`== FOLDER INTERNO: ${folder.sucesso} - == FOLDER EXTERNO: ${folderExterno.sucesso} - `);
-
-                // const thisPai = this;
                 async function iniciarGravacao() {
 
-                    const apiLevel = global.api_level;
-                    let nomeArqVideo = folder.pasta + "/_temporario_" + "video.mp4";
-                    // O ERRO ESTAVA AQUI, NAO POSSO PASSAR O PATH CARAIIIIIIIIIIIIII!!!!!!                    
-                    // Olha a merda. No Android 11 nao posso passar o Path pra funcionar.
-                    // No Android 12 sou abrigado a passar o Path
-                    let options = recordOptions;
-                    if (apiLevel > 30) {
-                        options = { ...options, path: nomeArqVideo };
-                    }
+                    // let nomeArqVideo = folder.pasta + "/_temporario_" + "video.mp4";
 
-                    console.log(`- NA CAMERA OPTIONS: ${JSON.stringify(options)}`);
+                    // KeepAwake.activate();
+                    toggleStopwatch();
 
-                    // Records a video, saves it in your app's cache directory and returns a promise when stopRecording is called or either maxDuration or maxFileSize specified are reached.
-                    let promise;
-                    try {
-                        promise = camera.recordAsync(options);
-                    } catch (erroRecordAsync) {
-                        console.error(`ERRO erroRecordAsync: ${erroRecordAsync}`);
-                        logar(`Gravacao nao iniciou por causa do erro: ${erroRecordAsync}`);
-                        stopVideo(3, erroRecordAsync);
-                        setSpinner(false);
-                    }
-                    
+                    setIsRecording(true);
+                    setParouPorTelaPreta(false);
+                    setNomeArquivoVideo("");
 
-                    if (promise) {
-                        // KeepAwake.activate();
-                        toggleStopwatch();
+                    // Caso volta a usar takeVideoSchedule retirar essa linha abaixo pois eh feito lah
+                    verificaStopGravacaoDiscoCheio2s(folder.pasta);
+                    // this.takeVideoSchedule(folder);
 
-                        setIsRecording(true);
-                        setParouPorTelaPreta(false);
-                        setNomeArquivoVideo("");
+                    // monitoraLogCat();
+                    // if (apiLevel > 30) {
+                    //     console.log(`- VERSAO DO ANDROID: [${apiLevel}]`);
+                    //     verificaTamanhoArqTemporario(nomeArqVideo, 1);
+                    // }
 
-                        // Caso volta a usar takeVideoSchedule retirar essa linha abaixo pois eh feito lah
-                        verificaStopGravacaoDiscoCheio2s(folder.pasta);
-                        // this.takeVideoSchedule(folder);
+                    logar(`Gravacao de video iniciada!`);
 
-                        // monitoraLogCat();
-                        if (apiLevel > 30) {
-                            console.log(`- VERSAO DO ANDROID: [${apiLevel}]`);
-                            verificaTamanhoArqTemporario(nomeArqVideo, 1);
-                        }
-
-                        logar(`Gravacao de video iniciada!`);
-
-                        // hideNavigationBar();
-
-                        const data = await promise;
-
-                        // showNavigationBar();                    
-
-                        setIsRecording(false);
-                        setFlash("off");
-
-                        try {
-                            setSpinner(true);
-                            const uri = data.uri.replace("file://", "");
-                            console.log(`- URI: ${uri} - FOLDER INTERNO: ${folder.pasta} - EXTERNO: ${folderExterno.pasta}`);
-                            const nomeArquivoDados = `${codEvento}${idSala}${idUsuario}${idTelefone}${moment(new Date()).format("DDMMYYHHmmss")}${entradaManual}.mp4`;
-                            const novoNomeArqVideo = `${folder.pasta}/${nomeArquivoDados}`;
-
-                            zeraCronometro();
-
-                            if (!parouPorTelaPreta) {
-                                await RNFS.moveFile(uri, novoNomeArqVideo);
-                                const msgVideoArmazenadoInterno = `O vídeo foi armazenado em ${novoNomeArqVideo}.`;
-                                let msgVideoArmazenadoExterno = '';
-
-                                logar(`Gravacao de video finalizada! ${msgVideoArmazenadoInterno}${msgVideoArmazenadoExterno}`);
-
-                                // TODO: Aqui chamada ao Modal de preencher formulario
-                                console.log(`- CHAMANDO jsonFORM: ${JSON.stringify(jsonFormulario)}`);
-                                if (jsonFormulario?.dados?.length > 0) {
-                                    navegar("FormularioInfoScreen", { jsonFormulario: JSON.stringify(jsonFormulario), arquivoVideo: nomeArquivoDados, msgVideoSucesso: msgVideoArmazenadoInterno });
-                                } else {
-                                    // mostraMsg(
-                                    //     `${msgVideoArmazenadoInterno}${msgVideoArmazenadoExterno}`,
-                                    //     "info",
-                                    //     global.dropDownAlertRef7000
-                                    // );
-                                    
-                                    Toast.show(`${msgVideoArmazenadoInterno}${msgVideoArmazenadoExterno}`, {                                        
-                                        type: "success",
-                                        placement: "top",
-                                        duration: 7000,    
-                                        animationType: "slide-in",
-                                        style: { marginTop: 25 }
-                                      });
-                                }
-                            }
-
+                    await camera.current.startRecording({
+                        flash: flash,
+                        onRecordingFinished: (video) => {
+                            console.log(`Recording successfully finished! ${video.path}`);
+                            //onMediaCaptured(video, 'video');
+                            onStoppedRecording(video, dados);
+                        },
+                        onRecordingError: (erroRecordAsync) => {
+                            console.error(`ERRO erroRecordAsync: ${JSON.stringify(erroRecordAsync)}`);
+                            logar(`Gravacao nao iniciou por causa do erro: ${JSON.stringify(erroRecordAsync)}`);
+                            stopVideo(3, erroRecordAsync);
                             setSpinner(false);
-
-                            return true;
-
-                        } catch (err) {
-                            console.error(err);
-                            setSpinner(false);
-                        }
-
-                        return true;
-                    }
+                        },
+                        // videoBitRate: number | "extra-low" | "low" | "normal" | "high" | "extra-high"
+                        videoBitRate: (0.75 * 1000 * 1000)
+                    });
 
                 }
 
@@ -499,12 +551,88 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         }
     };
 
+    const onStoppedRecording = async (video, dados) => {
+
+        console.log(`- Chamei onStoppedRecording!`);
+
+        setIsRecording(false);
+        setFlash("off");
+
+        let codEvento = dados.codEvento + '-';
+        let idUsuario = dados.idUsuario + '-';
+        let idSala = dados.idSala + '-';
+        let idTelefone = dados.idTelefone + '-';
+
+        let entradaManual = await AsyncStorage.getItem("@entrada_manual") || "";
+        entradaManual = entradaManual === "M" ? ('-' + entradaManual) : "";
+
+        const apiLevel = global.api_level;
+        let folder = await getPastaArmazenamentoInterno();
+        let folderExterno = await getPastaArmazenamentoExterno();
+
+        console.log(`- Folder: ${folder.pasta}`);
+        console.log(`== FOLDER INTERNO: ${folder.sucesso} - == FOLDER EXTERNO: ${folderExterno.sucesso} - `);
+
+        try {
+            setSpinner(true);
+            const uri = video.path;
+            console.log(`- URI: ${uri} - FOLDER INTERNO: ${folder.pasta} - EXTERNO: ${folderExterno.pasta}`);
+            const nomeArquivoDados = `${codEvento}${idSala}${idUsuario}${idTelefone}${moment(new Date()).format("DDMMYYHHmmss")}${entradaManual}.mp4`;
+            const novoNomeArqVideo = `${folder.pasta}/${nomeArquivoDados}`;
+
+            zeraCronometro();
+
+            if (!parouPorTelaPreta) {
+                await RNFS.moveFile(uri, novoNomeArqVideo);
+                const msgVideoArmazenadoInterno = `O vídeo foi armazenado em ${novoNomeArqVideo}.`;
+                let msgVideoArmazenadoExterno = '';
+
+                logar(`Gravacao de video finalizada! ${msgVideoArmazenadoInterno}${msgVideoArmazenadoExterno}`);
+
+                // TODO: Aqui chamada ao Modal de preencher formulario
+                console.log(`- CHAMANDO jsonFORM: ${JSON.stringify(jsonFormulario)}`);
+                if (jsonFormulario?.dados?.length > 0) {
+                    navegar("FormularioInfoScreen", { jsonFormulario: JSON.stringify(jsonFormulario), arquivoVideo: nomeArquivoDados, msgVideoSucesso: msgVideoArmazenadoInterno });
+                } else {
+                    Toast.show(`${msgVideoArmazenadoInterno}${msgVideoArmazenadoExterno}`, {
+                        type: "success",
+                        placement: "top",
+                        duration: 7000,
+                        animationType: "slide-in",
+                        style: { marginTop: 25 }
+                    });
+                }
+            }
+
+            setSpinner(false);
+
+        } catch (err) {
+            console.error(err);
+            setSpinner(false);
+        }
+
+    };
+
+    // const captureVideo = async () => {
+    //     console.log(`- Chamei captureVideo!`);
+    //     if (camera.current !== null) {
+    //         await camera.current.startRecording({
+    //             flash: 'on',
+    //             onRecordingFinished: (video) => {
+    //                 console.log(`Recording successfully finished! ${video.path}`);
+    //                 //onMediaCaptured(video, 'video');
+    //                 onStoppedRecording(video);
+    //               },
+    //             onRecordingError: (error) => console.error(error),
+    //           });
+    //         setIsRecording(true);
+    //         //setImageSource(photo.path);
+    //         //setShowCamera(false);
+    //         //console.log(photo.path);
+    //     }
+    // };
+
     const mostraMsgPai = (mensagem, tipo) => {
-        // mostraMsg(
-        //     mensagem,
-        //     tipo,
-        //     global.dropDownAlertRefNoClose
-        // );
         mostraMsgFormAltoTipoNaCamera(mensagem, tipo, Toast);
     };
 
@@ -588,7 +716,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         if (granted_WRITE_EXTERNAL_STORAGE &&
             granted_READ_EXTERNAL_STORAGE === PermissionsAndroid.RESULTS.GRANTED) {
             logar(`Usuario clicou: iniciar video.`);
-            takeVideoACada10Minutos();
+            takeVideoACada10Minutos();            
         } else {
             logar(`Usuario nao confirmou as permissoes necessarias para a gravacao.`);
             mostraMsgForm("Preciso de todas as permissões para continuar.", true, Toast);
@@ -607,33 +735,13 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
             logar(`Video nao iniciou por falta de espaco em disco. Espaco em disco: ${espacoBytes}`);
             stopVideo(1,'');
         } else {
-            takeVideo();
+            // takeVideo();
+            novoTakeVideo();
         }
     }
 
-
-    // facesDetected = ({ faces }) => setFaces({ faces });
-
-    const renderBarcode = ({ bounds, data, type }) => (
-        <React.Fragment key={data + bounds.origin.x}>
-            <View
-                style={[
-                    styles.text,
-                    {
-                        ...bounds.size,
-                        left: bounds.origin.x,
-                        top: bounds.origin.y,
-                    },
-                ]}
-            >
-                <Text style={[styles.textBlock]}>{`${data} ${type}`}</Text>
-            </View>
-        </React.Fragment>
-    );
-
-    const renderRecording = () => {
-        // const action = isRecording ? this.stopVideo : this.takeVideo;
-        const action = isRecording ? stopVideoCliqueBotao : startVideoCliqueBotao;
+    const renderRecording = () => {        
+        const action = isRecording ? stopVideoCliqueBotao : startVideoCliqueBotao;        
         return (
             <TouchableOpacity
                 style={{
@@ -753,7 +861,8 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         console.log(`- TIPO: ${tipo}`);
 
         setSpinner(true);
-        await camera.stopRecording();
+        // await camera.stopRecording();
+        camera.current.stopRecording();
         setSpinner(false);
 
         if (tipo === 1) {
@@ -913,6 +1022,28 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         );
     };
 
+    const getConfigFormat = async (configFormato) => {
+        let result = global.camera_formats;
+        // find the first format that includes the given FPS
+        // let retorno = result.find((f) => f.frameRateRanges.some((r) => frameRateIncluded(r, fps)));
+        // console.log(`RETORNO_FORMAT 1: ${JSON.stringify(retorno)}`);
+
+        console.log(`- FOMRATS: ${result}`);
+
+        let retorno;
+        result.forEach(element => {
+            // console.log(`- COMPARANDO: ${JSON.stringify(element)} COM ${configFormato}`) 
+            if (JSON.stringify(element) === JSON.stringify(configFormato)) {
+                console.log(`--- ACHEIIIIII ---`);
+                retorno = element;
+            }
+        });
+
+        console.log(`CONFIG_CAMERA: ${JSON.stringify(retorno)}`);
+
+        return retorno;
+    }
+
     const recarregaConfiguracoesTela = async () => {
         console.log("-- RECARREGANDO A CAMERA E CONFIGURACOES! --");
 
@@ -926,21 +1057,21 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
 
         // const videoBitRate = videoBitRateSelect;
 
-        const qualidade = await AsyncStorage.getItem("@qualidade_key") || qualidadeSelect;
-        console.log(`- Qualidade[CespeVideoRecorder]: ${qualidade}`);
+        // const qualidade = await AsyncStorage.getItem("@qualidade_key") || qualidadeSelect;
+        // console.log(`- Qualidade[NovoCespeVideoRecorder]: ${qualidade}`);
 
-        const videoBitRate = await AsyncStorage.getItem("@videobitrate_key") || videoBitRateSelect;
-        console.log(`- Video BitRateSelect[CespeVideoRecorder]: ${videoBitRate}`);
+        // const videoBitRate = await AsyncStorage.getItem("@videobitrate_key") || videoBitRateSelect;
+        // console.log(`- Video BitRateSelect[NovoCespeVideoRecorder]: ${videoBitRate}`);
 
         const codEvento = await AsyncStorage.getItem("@cod_evento") || codEventoSelect;
         const idUsuario = await AsyncStorage.getItem("@id_usuario") || idUsuarioSelect;
         const idSala = await AsyncStorage.getItem("@id_sala") || idSalaSelect;
         const jsonFormulario = await AsyncStorage.getItem("@json_formulario") || jsonFormulario;
 
-        setQualidadeSelect(qualidade);
-        setRatioSelect(ratio);
-        setVideoBitRateSelect(videoBitRate);
-        setRatio(ratio);
+        // setQualidadeSelect(qualidade);
+        // setRatioSelect(ratio);
+        // setVideoBitRateSelect(videoBitRate);
+        // setRatio(ratio);
         setCodEventoSelect(codEvento);
         setIdUsuarioSelect(idUsuario);
         setIdSalaSelect(idSala);
@@ -952,20 +1083,25 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         setIdUsuario({ error: "", value: idUsuario });
         setIdSala({ error: "", value: idSala });
 
-        setTxtQualidadeBitRate({        
-            txtQualidade: constants.dadosQualidadeVideo[0].opcoes.filter((o) => o.value == qualidade)[0].desc,        
-            txtVideoBitrate: constants.dadosQualidadeVideo[1].opcoes.filter((o) => o.value == videoBitRate)[0].desc
-        });
+        // setTxtQualidadeBitRate({        
+        //     txtQualidade: constants.dadosQualidadeVideo[0].opcoes.filter((o) => o.value == qualidade)[0].desc,        
+        //     txtVideoBitrate: constants.dadosQualidadeVideo[1].opcoes.filter((o) => o.value == videoBitRate)[0].desc
+        // });
 
-        console.log(`= Na Camera, setando videoBitRate para [${videoBitRate}] e qualidade para [${qualidade}] e [${RNCamera.Constants.VideoQuality[qualidade]}]`);
+        // console.log(`= Na Camera, setando videoBitRate para [${videoBitRate}] e qualidade para [${qualidade}] e [${RNCamera.Constants.VideoQuality[qualidade]}]`);
 
-        setRecordOptions({
-            ...recordOptions,
-            quality: RNCamera.Constants.VideoQuality[qualidade],
-            // videoBitrate: videoBitRate === "default" ? (6 * 1000 * 1000) : parseInt(videoBitRate)
-            videoBitrate: parseInt(videoBitRate)            
-        });
+        // setRecordOptions({
+        //     ...recordOptions,
+        //     quality: RNCamera.Constants.VideoQuality[qualidade],
+        //     // videoBitrate: videoBitRate === "default" ? (6 * 1000 * 1000) : parseInt(videoBitRate)
+        //     videoBitrate: parseInt(videoBitRate)            
+        // });
 
+        let configFormato = JSON.parse(await AsyncStorage.getItem("@configQualidade_key")) || constants.configQualidadeVideoPadrao;
+        configFormato = await getConfigFormat(configFormato) ||  configFormato;
+        setFormat(configFormato);
+
+        console.log(`FOMAT SELECT: ${JSON.stringify(configFormato)}`);
 
         // Verifica Zoom   
         const selecaoZoom = selecoesStorage.find(
@@ -997,7 +1133,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
 
     const verificaExisteSDCard = async () => {
         // Verifica se tem armazenamento externo SD Card
-        console.log(`== CespeVideoRecorder: verificaExisteSDCard`);
+        console.log(`== NovoCespeVideoRecorder: verificaExisteSDCard`);
         setTemSDCard(true);
         try {
             await getSDCardPathCameraCebraspeModule();
@@ -1006,6 +1142,16 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
             logar(`Info: Camera - Nao existe armazenamento externo. Apenas interno.`);
         }
     }
+
+    // Camera callbacks
+  const onError = useCallback((error: CameraRuntimeError) => {
+    console.error(`onError useCallback ${error}`);
+  }, []);
+
+  const onInitialized = useCallback(() => {
+    console.log('Camera initialized!');
+    setIsCameraInitialized(true);
+  }, []);
 
     // componentWillReceiveProps
     useEffect(() => {
@@ -1030,11 +1176,16 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
         left: autoFocusPoint.drawRectPosition.x - 32,
     };
 
+    if (device == null) {
+        return <Text>Camera not available</Text>;
+    }
+
     return (
         <>
-            <ContainerApp>
+            {/* <ContainerApp> */}
+                
                 <View style={styles.containerCamera}>
-                    <RNCamera
+                    {/* <RNCamera
                         key={uniqueValue}
                         ref={ref => {
                             camera = ref;
@@ -1050,21 +1201,23 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                         zoom={zoom}
                         whiteBalance={whiteBalance}
                         ratio={ratio}
-                        focusDepth={depth}
-                        androidCameraPermissionOptions={{
-                            title: "Permissão para uso da câmera",
-                            message: "Precisamos da sua permissão para usar a sua câmera",
-                            buttonPositive: "Sim",
-                            buttonNegative: "Não",
-                        }}
-                        faceDetectionLandmarks={
-                            RNCamera.Constants.FaceDetection.Landmarks
-                                ? RNCamera.Constants.FaceDetection.Landmarks.all
-                                : undefined
-                        }
-                        onFacesDetected={canDetectFaces ? facesDetected : null}
-                        onTextRecognized={canDetectText ? textRecognized : null}
-                    >
+                        focusDepth={depth}                        
+                    > */}
+
+                    {device != null && (
+                        <Camera
+                            ref={camera}
+                            style={StyleSheet.absoluteFill}
+                            device={device}
+                            isActive={isActive}
+                            format={format}
+                            onInitialized={onInitialized}
+                            onError={onError}                            
+                            video={true}
+                            audio={true}
+                        />
+                    )}
+                    
 
                         {focoHabilitado &&
                             <View style={StyleSheet.absoluteFill}>
@@ -1075,7 +1228,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                                     <Text style={{ color: "#fff", marginBottom: 5 }}>Foco</Text>
                                     <View style={styles.autoFocusBox}>
                                         <TouchableOpacity
-                                            style={[styles.flipButton, { height: 30, width: 50 }]}
+                                            style={[styles.flipButton,]}
                                             onPress={focusDepthOut.bind(this)}
                                         >
                                             <Text style={styles.flipText}>-</Text>
@@ -1086,7 +1239,7 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                                             <Text style={styles.flipText}>{depth}</Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity
-                                            style={[styles.flipButton, { height: 30, width: 50 }]}
+                                            style={[styles.flipButton]}
                                             onPress={focusDepthIn.bind(this)}
                                         >
                                             <Text style={styles.flipText}>+</Text>
@@ -1233,22 +1386,16 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                             <View style={styles.viewsBotoesCamera} >
 
                                 {flashHabilitado &&
-                                    <View style={styles.viewFuncionalidades}>
-                                        {/* <Text style={{ color: "#fff" }}>Flash</Text> */}
-
-                                        {/* <TouchableOpacity
-                                            style={[styles.flipButton, { height: 30, width: 50 }]}
-                                            onPress={toggleFlash.bind(this)}
-                                        >
-                                            <Text style={styles.flipText}>
-                                                {flash === 'torch' ? 'on' : 'off'}
-                                            </Text>
-                                        </TouchableOpacity> */}
-                                        <TouchableOpacity style={[styles.flipButton, { borderColor: flash === 'torch' ? theme.colors.app_flash_enable : theme.colors.app_flash_disable, width: 50 }]} onPress={toggleFlash.bind(this)}>
-                                            <FontAwesome5
+                                    <View style={styles.viewFuncionalidades}>                                        
+                                        <TouchableOpacity style={[styles.flipButton, { borderColor: flash === 'torch' ? theme.colors.app_flash_enable : theme.colors.app_flash_disable }]} onPress={toggleFlash.bind(this)}>
+                                            {/* <FontAwesome5
                                                 name={"bolt"}
                                                 size={25}
                                                 color={flash === 'torch' ? theme.colors.app_flash_enable : theme.colors.app_flash_disable}
+                                            /> */}
+                                            <IonIcon 
+                                                name={flash === 'torch' ? 'flash' : 'flash-off'} 
+                                                color={flash === 'torch' ? theme.colors.app_flash_enable : theme.colors.app_flash_disable} size={25} 
                                             />
                                         </TouchableOpacity>
                                     </View>
@@ -1258,13 +1405,13 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                                     <View style={styles.viewFuncionalidades}>
                                         <Text style={{ color: "#fff" }}>Zoom</Text>
                                         <TouchableOpacity
-                                            style={[styles.flipButton, { height: 30, width: 50 }]}
+                                            style={[styles.flipButton]}
                                             onPress={zoomIn.bind(this)}
                                         >
                                             <Text style={styles.flipText}>+</Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity
-                                            style={[styles.flipButton, { height: 30, width: 50 }]}
+                                            style={[styles.flipButton]}
                                             onPress={zoomOut.bind(this)}
                                         >
                                             <Text style={styles.flipText}>-</Text>
@@ -1422,9 +1569,9 @@ const CespeVideoRecorder: React.FunctionComponent<CespeVideoRecorderProps> = ({ 
                             </View>
 
                         </View>
-                    </RNCamera>
+                    {/* </RNCamera> */}
                 </View>
-            </ContainerApp>
+            {/* </ContainerApp> */}
 
             <AlertaModalNovoUsuario
                 swipeArea={50}
@@ -1491,11 +1638,13 @@ const styles = StyleSheet.create({
     },
     flipButton: {
         flex: 0.3,
-        height: 40,
+        width: BUTTON_SIZE,
+        height: BUTTON_SIZE,
+        borderRadius: BUTTON_SIZE / 2,
         marginHorizontal: 2,
         marginBottom: 10,
         marginTop: 10,
-        borderRadius: 8,
+        // borderRadius: 8,
         borderColor: "white",
         borderWidth: 1,
         padding: 5,
@@ -1729,4 +1878,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default CespeVideoRecorder;
+export default NovoCespeVideoRecorder;
